@@ -87,6 +87,10 @@
       "global": {
         "lines": 80
       }
-    }
+    },
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/__tests__/"
+    ]
   }
 }

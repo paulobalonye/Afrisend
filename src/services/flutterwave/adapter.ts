@@ -15,6 +15,11 @@ import { FlutterwaveError } from './types';
 
 const FLUTTERWAVE_BASE_URL = 'https://api.flutterwave.com/v3';
 
+// Only retry on transient/network errors, not on FlutterwaveError (API-level failures)
+function isRetryable(error: unknown): boolean {
+  return !(error instanceof FlutterwaveError);
+}
+
 const auditLogger = createAuditLogger('flutterwave');
 
 type FlwApiResponse<T> = {
@@ -94,7 +99,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
           );
           return assertSuccess(response.data);
         },
-        { maxAttempts: maxRetries },
+        { maxAttempts: maxRetries, shouldRetry: isRetryable },
       );
 
       auditLogger.log({ requestId, operation: 'verifyAccount', outcome: 'success', timestamp });
@@ -134,7 +139,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
           );
           return assertSuccess(response.data);
         },
-        { maxAttempts: maxRetries },
+        { maxAttempts: maxRetries, shouldRetry: isRetryable },
       );
 
       auditLogger.log({ requestId, operation: 'initiateTransfer', outcome: 'success', timestamp });
@@ -169,7 +174,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
           );
           return assertSuccess(response.data);
         },
-        { maxAttempts: maxRetries },
+        { maxAttempts: maxRetries, shouldRetry: isRetryable },
       );
 
       auditLogger.log({ requestId, operation: 'getTransferStatus', outcome: 'success', timestamp });
