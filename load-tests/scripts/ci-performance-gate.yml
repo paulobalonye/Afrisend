@@ -1,0 +1,136 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# GitHub Actions: Performance Regression Gate
+#
+# Runs the AfriSend load test suite against a deployed staging environment.
+# Fails the CI pipeline if any SLO is breached beyond baseline tolerances.
+#
+# Trigger: On-demand (workflow_dispatch) and on merges to main.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Performance Regression Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Load test scenario to run'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - transactions
+          - fx
+          - kyc
+  push:
+    branches:
+      - main
+    paths:
+      # Only run performance gate when backend code changes
+      - 'apps/api/**'
+      - 'packages/shared/**'
+
+jobs:
+  performance-gate:
+    name: Load Test & SLO Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    env:
+      K6_BASE_URL: ${{ secrets.STAGING_API_URL }}
+      TEST_USER_EMAIL: ${{ secrets.LOAD_TEST_USER_EMAIL }}
+      TEST_USER_EMAIL_2: ${{ secrets.LOAD_TEST_USER_EMAIL_2 }}
+      TEST_USER_EMAIL_3: ${{ secrets.LOAD_TEST_USER_EMAIL_3 }}
+      TEST_USER_PASSWORD: ${{ secrets.LOAD_TEST_USER_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring \
+            --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Verify staging API is healthy
+        run: |
+          curl -f "${K6_BASE_URL}/health" || (echo "Staging API health check failed" && exit 1)
+
+      - name: Create reports directory
+        run: mkdir -p load-tests/reports
+
+      - name: Run load tests
+        run: |
+          chmod +x load-tests/scripts/run-load-tests.sh
+          ./load-tests/scripts/run-load-tests.sh \
+            "${{ github.event.inputs.scenario || 'full' }}" \
+            --url "${K6_BASE_URL}" \
+            --ci \
+            --no-baseline
+        # Don't fail here — we compare against baseline separately
+
+      - name: Compare against performance baseline
+        run: node load-tests/scripts/compare-baseline.js
+        # This step fails CI if regressions are detected
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-reports-${{ github.run_id }}
+          path: load-tests/reports/
+          retention-days: 30
+
+      - name: Post summary to PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const resultsPath = 'load-tests/reports/slo-results.json';
+            if (!fs.existsSync(resultsPath)) {
+              console.log('No SLO results found — skipping PR comment');
+              return;
+            }
+
+            const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+            const slo = results.slo || {};
+
+            const fmt = (v, unit) => v != null ? `${Number(v).toFixed(1)}${unit}` : 'N/A';
+            const fmtRate = (v) => v != null ? `${(v * 100).toFixed(2)}%` : 'N/A';
+            const pass = (v, limit) => v != null && v < limit ? '✅' : '❌';
+            const passRate = (v, min) => v != null && v > min ? '✅' : '❌';
+
+            const body = `## 📊 Performance Regression Report
+
+            | Metric | Result | SLO | Status |
+            |--------|--------|-----|--------|
+            | Transaction p95 | ${fmt(slo.transaction_initiation_p95_ms, 'ms')} | <500ms | ${pass(slo.transaction_initiation_p95_ms, 500)} |
+            | FX Quote p99 | ${fmt(slo.fx_quote_p99_ms, 'ms')} | <200ms | ${pass(slo.fx_quote_p99_ms, 200)} |
+            | KYC Submit p95 | ${fmt(slo.kyc_submit_p95_ms, 'ms')} | <3000ms | ${pass(slo.kyc_submit_p95_ms, 3000)} |
+            | TX Success Rate | ${fmtRate(slo.transaction_success_rate)} | >99% | ${passRate(slo.transaction_success_rate, 0.99)} |
+            | FX Success Rate | ${fmtRate(slo.fx_success_rate)} | >99% | ${passRate(slo.fx_success_rate, 0.99)} |
+            | KYC Success Rate | ${fmtRate(slo.kyc_success_rate)} | >95% | ${passRate(slo.kyc_success_rate, 0.95)} |
+            | HTTP Error Rate | ${fmtRate(slo.global_http_error_rate)} | <2% | ${pass(slo.global_http_error_rate, 0.02)} |
+
+            *Run at: ${results.runAt || 'unknown'} against ${results.baseUrl || 'unknown'}*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });

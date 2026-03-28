@@ -1,0 +1,59 @@
+{
+  "_comment": "Performance regression baseline for AfriSend API. Update this file after each intentional performance improvement or when SLOs are officially revised. The CI script compares live results against these values.",
+  "version": "1.0.0",
+  "createdAt": "2026-03-28",
+  "environment": "local-dev",
+  "slos": {
+    "transaction_initiation": {
+      "p95_ms": 500,
+      "p99_ms": 1500,
+      "success_rate_min": 0.99,
+      "description": "POST /v1/transactions — initiate a send-money transaction"
+    },
+    "fx_quote_creation": {
+      "p95_ms": 150,
+      "p99_ms": 200,
+      "success_rate_min": 0.99,
+      "description": "POST /v1/fx/quote — generate a locked FX quote"
+    },
+    "fx_rate_fetch": {
+      "p99_ms": 50,
+      "description": "GET /v1/fx/rates — fetch current corridor rates (cached)"
+    },
+    "fx_quote_lock": {
+      "p95_ms": 100,
+      "description": "POST /v1/fx/quote/:id/lock — atomically lock a quote"
+    },
+    "kyc_session_create": {
+      "p95_ms": 500,
+      "description": "POST /v1/kyc/sessions — create a new KYC session"
+    },
+    "kyc_document_upload": {
+      "p95_ms": 2000,
+      "description": "POST /v1/kyc/sessions/:id/documents — upload identity document"
+    },
+    "kyc_submit": {
+      "p95_ms": 3000,
+      "p99_ms": 8000,
+      "success_rate_min": 0.95,
+      "description": "POST /v1/kyc/sessions/:id/submit — submit KYC for verification"
+    }
+  },
+  "global": {
+    "http_error_rate_max": 0.02,
+    "description": "Maximum acceptable HTTP error rate across all endpoints (excluding intentional 4xx)"
+  },
+  "peak_load": {
+    "transaction_vus": 10000,
+    "fx_quote_rps": 2000,
+    "fx_rate_read_rps": 300,
+    "kyc_vus": 500,
+    "description": "Target concurrency levels for production load simulation"
+  },
+  "regression_tolerances": {
+    "p95_degradation_pct": 20,
+    "p99_degradation_pct": 30,
+    "success_rate_drop_pct": 1,
+    "description": "CI will flag a regression if live results exceed baseline by these percentages"
+  }
+}
