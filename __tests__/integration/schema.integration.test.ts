@@ -286,3 +286,164 @@ describe('Schema: audit_log table', () => {
     expect(await indexExists('audit_log_actor_idx')).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Migration 005: version + deleted_at columns (audit columns spec §3.2)
+// ---------------------------------------------------------------------------
+
+describe('Schema: version column (optimistic locking) — migration 005', () => {
+  dbIt.each(['users', 'transactions', 'kyc_sessions'])(
+    '%s has version column',
+    async (table) => {
+      expect(await columnExists(table, 'version')).toBe(true);
+    },
+  );
+
+  dbIt('version defaults to 1 on users', async () => {
+    const res = await pool.query<{ column_default: string }>(
+      `SELECT column_default FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'version'`,
+    );
+    expect(res.rows[0]?.column_default).toBe('1');
+  });
+
+  dbIt('version defaults to 1 on transactions', async () => {
+    const res = await pool.query<{ column_default: string }>(
+      `SELECT column_default FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'transactions' AND column_name = 'version'`,
+    );
+    expect(res.rows[0]?.column_default).toBe('1');
+  });
+
+  dbIt('version defaults to 1 on kyc_sessions', async () => {
+    const res = await pool.query<{ column_default: string }>(
+      `SELECT column_default FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'kyc_sessions' AND column_name = 'version'`,
+    );
+    expect(res.rows[0]?.column_default).toBe('1');
+  });
+});
+
+describe('Schema: deleted_at column (soft delete) — migration 005', () => {
+  dbIt.each(['users', 'transactions', 'bank_accounts'])(
+    '%s has deleted_at column',
+    async (table) => {
+      expect(await columnExists(table, 'deleted_at')).toBe(true);
+    },
+  );
+
+  dbIt('deleted_at is nullable on users', async () => {
+    const res = await pool.query<{ is_nullable: string }>(
+      `SELECT is_nullable FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'deleted_at'`,
+    );
+    expect(res.rows[0]?.is_nullable).toBe('YES');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Migration 005: transactions money fields as BIGINT
+// ---------------------------------------------------------------------------
+
+describe('Schema: transactions money fields are BIGINT — migration 005', () => {
+  dbIt.each(['source_amount', 'destination_amount', 'fee'])(
+    '%s column is bigint',
+    async (col) => {
+      const res = await pool.query<{ data_type: string }>(
+        `SELECT data_type FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'transactions' AND column_name = $1`,
+        [col],
+      );
+      expect(res.rows[0]?.data_type).toBe('bigint');
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Migration 005: compliance columns on transactions
+// ---------------------------------------------------------------------------
+
+describe('Schema: transactions compliance columns — migration 005', () => {
+  dbIt('has compliance_status column', async () => {
+    expect(await columnExists('transactions', 'compliance_status')).toBe(true);
+  });
+
+  dbIt('compliance_status defaults to pending', async () => {
+    const res = await pool.query<{ column_default: string }>(
+      `SELECT column_default FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'transactions' AND column_name = 'compliance_status'`,
+    );
+    expect(res.rows[0]?.column_default).toBe("'pending'::text");
+  });
+
+  dbIt('has risk_score column', async () => {
+    expect(await columnExists('transactions', 'risk_score')).toBe(true);
+  });
+
+  dbIt('risk_score is nullable', async () => {
+    const res = await pool.query<{ is_nullable: string }>(
+      `SELECT is_nullable FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'transactions' AND column_name = 'risk_score'`,
+    );
+    expect(res.rows[0]?.is_nullable).toBe('YES');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Migration 005: recipients table
+// ---------------------------------------------------------------------------
+
+describe('Schema: recipients table — migration 005', () => {
+  dbIt('exists', async () => {
+    expect(await tableExists('recipients')).toBe(true);
+  });
+
+  dbIt.each([
+    'id', 'user_id', 'nickname', 'country', 'payout_method',
+    'account_details_encrypted', 'created_at', 'updated_at',
+  ])('has column: %s', async (col) => {
+    expect(await columnExists('recipients', col)).toBe(true);
+  });
+
+  dbIt('has primary key', async () => {
+    expect(await constraintExists('recipients', 'PRIMARY KEY')).toBe(true);
+  });
+
+  dbIt('enforces foreign key to users', async () => {
+    expect(await constraintExists('recipients', 'FOREIGN KEY')).toBe(true);
+  });
+
+  dbIt('has index on user_id', async () => {
+    expect(await indexExists('recipients_user_idx')).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Migration 005: partial indexes on transactions
+// ---------------------------------------------------------------------------
+
+describe('Schema: transactions partial indexes — migration 005', () => {
+  dbIt('has idx_txn_status partial index (active statuses only)', async () => {
+    expect(await indexExists('idx_txn_status')).toBe(true);
+  });
+
+  dbIt('has idx_txn_compliance partial index (flagged only)', async () => {
+    expect(await indexExists('idx_txn_compliance')).toBe(true);
+  });
+
+  dbIt('idx_txn_status is a partial index', async () => {
+    const res = await pool.query<{ indexdef: string }>(
+      `SELECT indexdef FROM pg_indexes
+       WHERE schemaname = 'public' AND indexname = 'idx_txn_status'`,
+    );
+    expect(res.rows[0]?.indexdef).toContain('WHERE');
+  });
+
+  dbIt('idx_txn_compliance is a partial index', async () => {
+    const res = await pool.query<{ indexdef: string }>(
+      `SELECT indexdef FROM pg_indexes
+       WHERE schemaname = 'public' AND indexname = 'idx_txn_compliance'`,
+    );
+    expect(res.rows[0]?.indexdef).toContain('WHERE');
+  });
+});
