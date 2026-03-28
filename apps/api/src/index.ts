@@ -12,6 +12,10 @@ import { DefaultAuthService } from './services/authService';
 import { DefaultKycService } from './services/kycService';
 import { DefaultRemittanceService } from './services/remittanceService';
 import { DefaultUserService } from './services/userService';
+import { DefaultTransactionService } from './services/transactionService';
+import { FxRateService } from './services/fxRateService';
+import { DefaultAdminService } from './services/adminService';
+import { JwtService } from './services/jwtService';
 import { PayoutRoutingService } from './services/payoutRoutingService';
 import {
   SandboxMpesaProvider,
@@ -22,6 +26,8 @@ import {
 } from './services/payoutProviders';
 
 const PORT = Number(process.env.PORT ?? 3000);
+
+const jwtService = new JwtService();
 
 const payoutRoutingService = new PayoutRoutingService([
   new SandboxFlutterwavePayoutProvider(),
@@ -37,6 +43,10 @@ const app = createApp({
   kycService: new DefaultKycService(),
   remittanceService: new DefaultRemittanceService(),
   userService: new DefaultUserService(),
+  transactionService: new DefaultTransactionService(),
+  fxRateService: undefined as unknown as import('./services/fxRateService').IFxRateService, // requires full config in production
+  adminService: new DefaultAdminService(),
+  jwtService,
   payoutRoutingService,
 });
 

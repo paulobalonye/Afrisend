@@ -17,6 +17,7 @@ import type { IUserService } from './services/userService';
 import type { ITransactionService } from './services/transactionService';
 import type { IFxRateService } from './services/fxRateService';
 import type { IPayoutRoutingService } from './services/payoutRoutingService';
+import type { IAdminService } from './services/adminService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -27,8 +28,11 @@ import { createWebhooksRouter } from './routes/webhooks';
 import { createTransactionRouter } from './routes/transactions';
 import { createFxRouter } from './routes/fx';
 import { createPayoutRouter } from './routes/payout';
+import { createAdminRouter } from './routes/admin';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
 import { requireAuth } from './middleware/requireAuth';
+import { createRequireAdmin } from './middleware/requireAdmin';
+import { JwtService } from './services/jwtService';
 import { createMetricsMiddleware, createMetricsRouter } from './middleware/metricsMiddleware';
 import { createLoggerMiddleware } from './middleware/logger';
 import { Registry } from 'prom-client';
@@ -42,6 +46,8 @@ export type AppServices = {
   transactionService: ITransactionService;
   fxRateService: IFxRateService;
   payoutRoutingService: IPayoutRoutingService;
+  adminService: IAdminService;
+  jwtService: JwtService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -72,6 +78,10 @@ export function createApp(services: AppServices): Application {
   app.use('/v1/transactions', requireAuth, createTransactionRouter(services.transactionService));
   app.use('/v1/fx', createFxRouter(services.fxRateService));
   app.use('/v1/payout', createPayoutRouter(services.payoutRoutingService));
+
+  // ── Admin routes (require admin JWT) ─────────────────────────────────────
+  const requireAdmin = createRequireAdmin(services.jwtService);
+  app.use('/v1/admin', requireAdmin, createAdminRouter(services.adminService));
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((_req, res) => {

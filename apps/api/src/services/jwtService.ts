@@ -12,6 +12,7 @@ import jwt from 'jsonwebtoken';
 export type AccessTokenPayload = {
   userId: string;
   email: string;
+  isAdmin?: boolean;
   exp?: number;
   iat?: number;
 };
@@ -48,10 +49,12 @@ export class JwtService {
     return this.publicKey;
   }
 
-  async signAccessToken(payload: { userId: string; email: string }): Promise<string> {
+  async signAccessToken(payload: { userId: string; email: string; isAdmin?: boolean }): Promise<string> {
     return new Promise((resolve, reject) => {
+      const claims: Record<string, unknown> = { userId: payload.userId, email: payload.email };
+      if (payload.isAdmin) claims.isAdmin = true;
       jwt.sign(
-        { userId: payload.userId, email: payload.email },
+        claims,
         this.privateKey,
         { algorithm: 'RS256', expiresIn: '15m' },
         (err, token) => {
