@@ -287,6 +287,178 @@ describe('SmileIdentityAdapter (concrete implementation)', () => {
       expect(adapter.verifyWebhookSignature('body', 'short')).toBe(false);
     });
   });
+
+  describe('submitJob', () => {
+    let adapter: DefaultSmileIdentityAdapter;
+
+    beforeEach(() => {
+      adapter = new DefaultSmileIdentityAdapter({
+        apiKey: 'test-key',
+        partnerId: 'test-partner',
+        apiUrl: 'http://mock-api',
+        webhookSecret: 'secret',
+      });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('submits job and returns smileJobId from API response', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          smile_job_id: 'smile-abc-123',
+          result: {
+            ResultCode: '0810',
+            ResultText: 'Enrol User',
+            Actions: { Verify_ID_Number: 'Verified' },
+          },
+        }),
+      }) as unknown as typeof fetch;
+
+      const result = await adapter.submitJob({
+        userId: 'user-1',
+        tier: 1,
+        documentType: 'national_id',
+        imageBase64: 'base64data',
+      });
+
+      expect(result.smileJobId).toBe('smile-abc-123');
+      expect(result.resultCode).toBe('0810');
+      expect(result.resultText).toBe('Enrol User');
+    });
+
+    it('calls the correct Smile Identity submission endpoint', async () => {
+      const mockFetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ smile_job_id: 'j1', result: {} }),
+      });
+      global.fetch = mockFetch as unknown as typeof fetch;
+
+      await adapter.submitJob({ userId: 'u', tier: 1, documentType: 'national_id', imageBase64: 'b64' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/smile_identity_services/v1/submission'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
+    it('throws on non-ok API response', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('Internal Server Error'),
+      }) as unknown as typeof fetch;
+
+      await expect(
+        adapter.submitJob({ userId: 'u', tier: 1, documentType: 'passport', imageBase64: 'b64' }),
+      ).rejects.toThrow(/500/);
+    });
+
+    it('uses passport image type id 0 for passport documents', async () => {
+      const mockFetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ smile_job_id: 'j-pass', result: {} }),
+      });
+      global.fetch = mockFetch as unknown as typeof fetch;
+
+      await adapter.submitJob({ userId: 'u', tier: 1, documentType: 'passport', imageBase64: 'b64' });
+
+      const callBody = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string);
+      expect(callBody.images[0].image_type_id).toBe(0);
+    });
+
+    it('uses image type id 1 for national_id documents', async () => {
+      const mockFetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ smile_job_id: 'j-nid', result: {} }),
+      });
+      global.fetch = mockFetch as unknown as typeof fetch;
+
+      await adapter.submitJob({ userId: 'u', tier: 1, documentType: 'national_id', imageBase64: 'b64' });
+
+      const callBody = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string);
+      expect(callBody.images[0].image_type_id).toBe(1);
+    });
+
+    it('falls back to generated job id when API response lacks smile_job_id', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ result: { ResultCode: '0810', ResultText: 'OK' } }),
+      }) as unknown as typeof fetch;
+
+      const result = await adapter.submitJob({ userId: 'u', tier: 1, documentType: 'passport', imageBase64: 'b64' });
+
+      expect(result.smileJobId).toContain('test-partner');
+    });
+  });
+
+  describe('getJobStatus', () => {
+    let adapter: DefaultSmileIdentityAdapter;
+
+    beforeEach(() => {
+      adapter = new DefaultSmileIdentityAdapter({
+        apiKey: 'key', partnerId: 'pid', apiUrl: 'http://api', webhookSecret: 'secret',
+      });
+    });
+
+    it('returns job status from API', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          smile_job_id: 'job-1',
+          job_complete: true,
+          result: { ResultCode: '0810', ResultText: 'Enrol User' },
+        }),
+      }) as unknown as typeof fetch;
+
+      const result = await adapter.getJobStatus('job-1');
+
+      expect(result.smileJobId).toBe('job-1');
+      expect(result.complete).toBe(true);
+      expect(result.resultCode).toBe('0810');
+    });
+
+    it('returns complete: false when job is pending', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          smile_job_id: 'job-pending',
+          job_complete: false,
+          result: null,
+        }),
+      }) as unknown as typeof fetch;
+
+      const result = await adapter.getJobStatus('job-pending');
+      expect(result.complete).toBe(false);
+    });
+
+    it('throws on API failure', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      }) as unknown as typeof fetch;
+
+      await expect(adapter.getJobStatus('unknown-job')).rejects.toThrow(/404/);
+    });
+  });
+
+  describe('createSmileIdentityAdapter factory', () => {
+    it('creates an adapter instance with env var config', () => {
+      const { createSmileIdentityAdapter } = require('@/server/adapters/smileIdentityAdapter');
+      const instance = createSmileIdentityAdapter();
+      expect(instance).toBeInstanceOf(DefaultSmileIdentityAdapter);
+    });
+
+    it('uses SMILE_IDENTITY_API_URL env var when set', () => {
+      process.env['SMILE_IDENTITY_API_URL'] = 'https://custom.api.url';
+      const { createSmileIdentityAdapter } = require('@/server/adapters/smileIdentityAdapter');
+      const instance = createSmileIdentityAdapter();
+      expect(instance).toBeInstanceOf(DefaultSmileIdentityAdapter);
+      delete process.env['SMILE_IDENTITY_API_URL'];
+    });
+  });
 });
 
 // ─── KYC route tests (POST /submit, GET /status, POST /webhook/smile-identity) ──
