@@ -77,6 +77,7 @@ export type TransitionOptions = {
   reason?: string;
   actor?: string;
   note?: string;
+  payoutReference?: string;
 };
 
 // ─── State machine allowed transitions ───────────────────────────────────────
@@ -97,6 +98,8 @@ const MAX_RETRIES = 3;
 export interface ITransactionService {
   initiate(input: InitiateTransactionInput): Promise<Transaction>;
   get(transactionId: string, userId: string): Promise<Transaction>;
+  /** Get a transaction by ID without userId ownership check — for internal service use only. */
+  getById(transactionId: string): Promise<Transaction>;
   list(userId: string, pagination: PaginationInput): Promise<PaginatedTransactions>;
   cancel(transactionId: string, userId: string): Promise<Transaction>;
   transitionTo(transactionId: string, status: TransactionStatus, opts?: TransitionOptions): Promise<Transaction>;
@@ -173,6 +176,14 @@ export class DefaultTransactionService implements ITransactionService {
     return tx;
   }
 
+  async getById(transactionId: string): Promise<Transaction> {
+    const tx = this.transactions.get(transactionId);
+    if (!tx) {
+      throw new Error(`Transaction not found: ${transactionId}`);
+    }
+    return tx;
+  }
+
   async list(userId: string, pagination: PaginationInput): Promise<PaginatedTransactions> {
     const all = Array.from(this.transactions.values())
       .filter(tx => tx.userId === userId)
@@ -217,13 +228,10 @@ export class DefaultTransactionService implements ITransactionService {
     const updated: Transaction = {
       ...tx,
       status: toStatus,
-      failureReason: opts.reason ?? (toStatus === TransactionStatus.Failed ? tx.failureReason : null),
+      failureReason: opts.note ?? opts.reason ?? (toStatus === TransactionStatus.Failed ? tx.failureReason : null),
+      payoutReference: opts.payoutReference ?? tx.payoutReference,
       updatedAt: new Date(),
     };
-
-    if (opts.reason && toStatus === TransactionStatus.Failed) {
-      updated.failureReason = opts.reason;
-    }
 
     this.transactions.set(transactionId, updated);
     this._appendEvent(transactionId, fromStatus, toStatus, opts.actor ?? 'system', opts.note ?? null);

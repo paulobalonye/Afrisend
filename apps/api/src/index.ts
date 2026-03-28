@@ -12,8 +12,24 @@ import { DefaultAuthService } from './services/authService';
 import { DefaultKycService } from './services/kycService';
 import { DefaultRemittanceService } from './services/remittanceService';
 import { DefaultUserService } from './services/userService';
+import { PayoutRoutingService } from './services/payoutRoutingService';
+import {
+  SandboxMpesaProvider,
+  SandboxMtnMomoProvider,
+  SandboxAirtelMoneyProvider,
+  SandboxOrangeMoneyProvider,
+  SandboxFlutterwavePayoutProvider,
+} from './services/payoutProviders';
 
 const PORT = Number(process.env.PORT ?? 3000);
+
+const payoutRoutingService = new PayoutRoutingService([
+  new SandboxFlutterwavePayoutProvider(),
+  new SandboxMpesaProvider(),
+  new SandboxMtnMomoProvider(),
+  new SandboxAirtelMoneyProvider(),
+  new SandboxOrangeMoneyProvider(),
+]);
 
 const app = createApp({
   otpService: new DefaultOtpService(),
@@ -21,6 +37,7 @@ const app = createApp({
   kycService: new DefaultKycService(),
   remittanceService: new DefaultRemittanceService(),
   userService: new DefaultUserService(),
+  payoutRoutingService,
 });
 
 app.listen(PORT, () => {
