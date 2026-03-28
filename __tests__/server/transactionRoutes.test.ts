@@ -105,6 +105,40 @@ describe('POST /v1/transactions', () => {
     expect(res.status).toBe(400);
   });
 
+  it('returns 400 when currency is missing', async () => {
+    const app = buildApp(buildMockService());
+    const { currency: _omit, ...body } = validBody;
+    const res = await request(app).post('/v1/transactions').set(AUTH_HEADER).send(body);
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when targetAmount is missing or not positive', async () => {
+    const app = buildApp(buildMockService());
+    const res = await request(app).post('/v1/transactions').set(AUTH_HEADER).send({ ...validBody, targetAmount: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when targetCurrency is missing', async () => {
+    const app = buildApp(buildMockService());
+    const { targetCurrency: _omit, ...body } = validBody;
+    const res = await request(app).post('/v1/transactions').set(AUTH_HEADER).send(body);
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when fxRate is missing or not positive', async () => {
+    const app = buildApp(buildMockService());
+    const res = await request(app).post('/v1/transactions').set(AUTH_HEADER).send({ ...validBody, fxRate: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it('propagates service errors to global error handler', async () => {
+    const app = buildApp(buildMockService({
+      initiate: jest.fn().mockRejectedValue(new Error('unexpected service error')),
+    }));
+    const res = await request(app).post('/v1/transactions').set(AUTH_HEADER).send(validBody);
+    expect(res.status).toBe(500);
+  });
+
   it('returns 401 without auth header', async () => {
     const app = buildApp(buildMockService());
     const res = await request(app).post('/v1/transactions').send(validBody);
@@ -149,6 +183,14 @@ describe('GET /v1/transactions/:id', () => {
     const res = await request(app).get('/v1/transactions/tx-001');
 
     expect(res.status).toBe(401);
+  });
+
+  it('propagates non-not-found errors to global error handler', async () => {
+    const app = buildApp(buildMockService({
+      get: jest.fn().mockRejectedValue(new Error('database connection failed')),
+    }));
+    const res = await request(app).get('/v1/transactions/tx-001').set(AUTH_HEADER);
+    expect(res.status).toBe(500);
   });
 });
 
@@ -224,6 +266,14 @@ describe('POST /v1/transactions/:id/cancel', () => {
     const res = await request(app).post('/v1/transactions/tx-001/cancel').set(AUTH_HEADER);
 
     expect(res.status).toBe(409);
+  });
+
+  it('propagates non-cancel errors to global error handler', async () => {
+    const app = buildApp(buildMockService({
+      cancel: jest.fn().mockRejectedValue(new Error('database connection failed')),
+    }));
+    const res = await request(app).post('/v1/transactions/tx-001/cancel').set(AUTH_HEADER);
+    expect(res.status).toBe(500);
   });
 
   it('returns 401 without auth header', async () => {
