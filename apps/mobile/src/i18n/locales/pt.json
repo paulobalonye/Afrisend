@@ -246,5 +246,122 @@
     "permissionBody": "Ative as notificações para receber atualizações em tempo real sobre suas transferências de dinheiro.",
     "enableButton": "Ativar notificações",
     "skipButton": "Agora não"
+  },
+  "home": {
+    "welcomeBack": "Bem-vindo de volta,",
+    "signOut": "Sair",
+    "verifyIdentity": "Verifique sua identidade",
+    "completeKyc": "Complete a verificação para começar a enviar dinheiro",
+    "quickActions": "Ações rápidas",
+    "sendMoney": "Enviar dinheiro",
+    "transactions": "Transações",
+    "recipients": "Destinatários",
+    "settings": "Configurações",
+    "accountTier": "Seu nível de conta",
+    "verified": "✓ Verificado",
+    "unverified": "Não verificado",
+    "noSendingLimit": "Sem limite de envio até a verificação",
+    "upgradeNow": "Melhorar agora"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "languageSubtitle": "Escolha seu idioma preferido",
+    "selectLanguage": "Selecionar idioma",
+    "languageChanged": "Idioma atualizado"
+  },
+  "send": {
+    "title": "Enviar dinheiro",
+    "step1": {
+      "title": "Selecionar destinatário",
+      "subtitle": "Para quem você está enviando dinheiro?",
+      "searchPlaceholder": "Pesquisar destinatários",
+      "addNew": "Adicionar novo destinatário",
+      "savedRecipients": "Destinatários salvos"
+    },
+    "step2": {
+      "title": "Inserir valor",
+      "subtitle": "Quanto você está enviando?",
+      "sendLabel": "Você envia",
+      "receiveLabel": "Eles recebem",
+      "switchDirection": "Trocar direção",
+      "rate": "Taxa",
+      "fee": "Tarifa",
+      "total": "Total",
+      "rateLockedFor": "Taxa bloqueada por {{time}}",
+      "rateExpired": "Taxa expirada. Atualizando...",
+      "quoteRefreshing": "Atualizando taxa...",
+      "selectCorridor": "Selecionar destino",
+      "minAmount": "Mínimo: {{amount}}",
+      "maxAmount": "Máximo: {{amount}}"
+    },
+    "step3": {
+      "title": "Método de pagamento",
+      "subtitle": "Como você quer pagar?",
+      "card": "Pagar com cartão",
+      "bankTransfer": "Transferência bancária",
+      "savedMethods": "Métodos de pagamento salvos",
+      "cardNumber": "Número do cartão",
+      "expiryDate": "Data de validade",
+      "cvv": "CVV",
+      "cardholderName": "Nome do titular"
+    },
+    "step4": {
+      "title": "Revisar e confirmar",
+      "subtitle": "Verifique os detalhes antes de confirmar",
+      "youSend": "Você envia",
+      "theyReceive": "Eles recebem",
+      "exchangeRate": "Taxa de câmbio",
+      "fees": "Tarifas",
+      "estimatedArrival": "Chegada estimada",
+      "arrivalTime": "Em menos de 5 minutos",
+      "recipient": "Destinatário",
+      "paymentMethod": "Método de pagamento",
+      "termsAgreement": "Concordo com os Termos de Serviço e confirmo esta transferência",
+      "confirmButton": "Confirmar e enviar"
+    },
+    "step5": {
+      "processingTitle": "Processando sua transferência...",
+      "processingSubtitle": "Aguarde enquanto processamos seu pagamento",
+      "successTitle": "Transferência enviada!",
+      "successSubtitle": "Seu dinheiro está a caminho",
+      "transactionId": "ID da transação",
+      "shareReceipt": "Compartilhar recibo",
+      "sendAnother": "Enviar outro",
+      "backHome": "Voltar ao início",
+      "failureTitle": "Transferência falhou",
+      "failureSubtitle": "Não conseguimos processar sua transferência",
+      "failureReason": "Motivo: {{reason}}",
+      "retryButton": "Tentar novamente"
+    }
+  },
+  "transactions": {
+    "title": "Transações",
+    "empty": "Nenhuma transação ainda",
+    "emptySubtitle": "Seu histórico de transferências aparecerá aqui",
+    "filter": {
+      "all": "Todas",
+      "pending": "Pendente",
+      "processing": "Processando",
+      "completed": "Concluída",
+      "failed": "Falhou"
+    },
+    "status": {
+      "pending": "Pendente",
+      "processing": "Processando",
+      "completed": "Concluída",
+      "failed": "Falhou",
+      "cancelled": "Cancelada"
+    },
+    "details": {
+      "title": "Detalhes da transação",
+      "transactionId": "ID da transação",
+      "date": "Data",
+      "youSent": "Você enviou",
+      "theyReceived": "Eles receberam",
+      "exchangeRate": "Taxa de câmbio",
+      "fee": "Tarifa",
+      "recipient": "Destinatário"
+    }
   }
 }

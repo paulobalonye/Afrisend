@@ -312,6 +312,29 @@
       "retryButton": "Try again"
     }
   },
+  "home": {
+    "welcomeBack": "Welcome back,",
+    "signOut": "Sign out",
+    "verifyIdentity": "Verify your identity",
+    "completeKyc": "Complete KYC to start sending money",
+    "quickActions": "Quick actions",
+    "sendMoney": "Send money",
+    "transactions": "Transactions",
+    "recipients": "Recipients",
+    "settings": "Settings",
+    "accountTier": "Your account tier",
+    "verified": "✓ Verified",
+    "unverified": "Unverified",
+    "noSendingLimit": "No sending limit until verified",
+    "upgradeNow": "Upgrade now"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageSubtitle": "Choose your preferred language",
+    "selectLanguage": "Select language",
+    "languageChanged": "Language updated"
+  },
   "transactions": {
     "title": "Transactions",
     "empty": "No transactions yet",

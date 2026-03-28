@@ -27,7 +27,7 @@ export function HomeScreen() {
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
         <View>
           <Typography variant="bodySmall" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Welcome back,
+            {t('home.welcomeBack')}
           </Typography>
           <Typography variant="h3" style={{ color: '#FFF' }}>
             {user?.firstName ?? 'User'} 👋
@@ -36,11 +36,11 @@ export function HomeScreen() {
         <TouchableOpacity
           onPress={signOut}
           accessibilityRole="button"
-          accessibilityLabel="Sign out"
+          accessibilityLabel={t('home.signOut')}
           style={styles.signOutButton}
         >
           <Typography variant="bodySmall" style={{ color: 'rgba(255,255,255,0.8)' }}>
-            Sign out
+            {t('home.signOut')}
           </Typography>
         </TouchableOpacity>
       </View>
@@ -60,11 +60,11 @@ export function HomeScreen() {
             <Typography style={styles.kycBannerIcon}>🔐</Typography>
             <View style={styles.kycBannerText}>
               <Typography variant="body" style={{ color: theme.colors.text, fontWeight: '600' }}>
-                Verify your identity
+                {t('home.verifyIdentity')}
               </Typography>
               <Typography variant="bodySmall" style={{ color: theme.colors.textSecondary }}>
                 {kycTier === 0
-                  ? 'Complete KYC to start sending money'
+                  ? t('home.completeKyc')
                   : `Current limit: ${t(`kyc.tiers.tier${kycTier as 1 | 2 | 3}.limit`)}`}
               </Typography>
             </View>
@@ -75,14 +75,14 @@ export function HomeScreen() {
         {/* Quick actions */}
         <View style={styles.section}>
           <Typography variant="h4" style={{ color: theme.colors.text, marginBottom: 16 }}>
-            Quick actions
+            {t('home.quickActions')}
           </Typography>
           <View style={styles.actionsGrid}>
             {[
-              { icon: '💸', label: 'Send money', testID: 'send-money-action', onPress: () => navigation.navigate('SendMoney') },
-              { icon: '📊', label: 'Transactions', testID: 'transactions-action', onPress: () => navigation.navigate('TransactionHistory') },
-              { icon: '👥', label: 'Recipients', testID: 'recipients-action', onPress: () => {} },
-              { icon: '⚙️', label: 'Settings', testID: 'settings-action', onPress: () => {} },
+              { icon: '💸', label: t('home.sendMoney'), testID: 'send-money-action', onPress: () => navigation.navigate('SendMoney') },
+              { icon: '📊', label: t('home.transactions'), testID: 'transactions-action', onPress: () => navigation.navigate('TransactionHistory') },
+              { icon: '👥', label: t('home.recipients'), testID: 'recipients-action', onPress: () => {} },
+              { icon: '⚙️', label: t('home.settings'), testID: 'settings-action', onPress: () => navigation.navigate('Settings') },
             ].map((action) => (
               <TouchableOpacity
                 key={action.label}
@@ -107,25 +107,25 @@ export function HomeScreen() {
         <View style={[styles.tierCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
           <View style={styles.tierCardHeader}>
             <Typography variant="body" style={{ color: theme.colors.text, fontWeight: '600' }}>
-              Your account tier
+              {t('home.accountTier')}
             </Typography>
             {kycVerified && (
               <Typography variant="caption" style={{ color: theme.colors.success, fontWeight: '600' }}>
-                ✓ Verified
+                {t('home.verified')}
               </Typography>
             )}
           </View>
           <Typography variant="h4" style={{ color: theme.colors.primary, marginTop: 4 }}>
-            {kycTier === 0 ? 'Unverified' : t(`kyc.tiers.tier${kycTier as 1 | 2 | 3}.name`)}
+            {kycTier === 0 ? t('home.unverified') : t(`kyc.tiers.tier${kycTier as 1 | 2 | 3}.name`)}
           </Typography>
           <Typography variant="bodySmall" style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
             {kycTier === 0
-              ? 'No sending limit until verified'
+              ? t('home.noSendingLimit')
               : t(`kyc.tiers.tier${kycTier as 1 | 2 | 3}.limit`)}
           </Typography>
           {!kycVerified && (
             <Button
-              label="Upgrade now"
+              label={t('home.upgradeNow')}
               onPress={() => navigation.navigate('Kyc')}
               variant="outline"
               size="sm"

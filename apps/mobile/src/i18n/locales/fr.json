@@ -312,6 +312,29 @@
       "retryButton": "Réessayer"
     }
   },
+  "home": {
+    "welcomeBack": "Bon retour,",
+    "signOut": "Se déconnecter",
+    "verifyIdentity": "Vérifiez votre identité",
+    "completeKyc": "Complétez la vérification pour commencer à envoyer de l'argent",
+    "quickActions": "Actions rapides",
+    "sendMoney": "Envoyer de l'argent",
+    "transactions": "Transactions",
+    "recipients": "Destinataires",
+    "settings": "Paramètres",
+    "accountTier": "Votre niveau de compte",
+    "verified": "✓ Vérifié",
+    "unverified": "Non vérifié",
+    "noSendingLimit": "Aucune limite d'envoi jusqu'à la vérification",
+    "upgradeNow": "Améliorer maintenant"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "languageSubtitle": "Choisissez votre langue préférée",
+    "selectLanguage": "Sélectionner la langue",
+    "languageChanged": "Langue mise à jour"
+  },
   "transactions": {
     "title": "Transactions",
     "empty": "Aucune transaction",
