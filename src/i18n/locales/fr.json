@@ -207,6 +207,44 @@
     "fileTooLarge": "Le fichier est trop volumineux. La taille maximale est {{maxSize}}Mo.",
     "unsupportedFormat": "Format de fichier non supporté. Veuillez utiliser JPG ou PNG.",
     "cameraPermissionDenied": "Accès à la caméra refusé. Veuillez l'activer dans les paramètres.",
-    "galleryPermissionDenied": "Accès à la galerie refusé. Veuillez l'activer dans les paramètres."
+    "galleryPermissionDenied": "Accès à la galerie refusé. Veuillez l'activer dans les paramètres.",
+    "pushPermissionDenied": "Les notifications sont désactivées. Activez-les dans les paramètres pour recevoir les mises à jour de transfert.",
+    "offlineQueued": "Vous êtes hors ligne. Votre transfert sera envoyé automatiquement lors de la reconnexion.",
+    "syncFailed": "Échec de la synchronisation des transferts en attente. Appuyez pour réessayer."
+  },
+  "recipients": {
+    "title": "Destinataires enregistrés",
+    "addNew": "Ajouter un destinataire",
+    "edit": "Modifier le destinataire",
+    "delete": "Supprimer le destinataire",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {{name}} ?",
+    "empty": "Aucun destinataire enregistré",
+    "emptySubtitle": "Enregistrez des destinataires pour envoyer de l'argent plus rapidement",
+    "nickname": "Surnom (facultatif)",
+    "firstName": "Prénom",
+    "lastName": "Nom de famille",
+    "country": "Pays",
+    "payoutMethod": "Mode de paiement",
+    "mobileMoney": "Mobile money",
+    "bankTransfer": "Virement bancaire",
+    "phoneNumber": "Numéro de téléphone",
+    "network": "Réseau mobile",
+    "accountNumber": "Numéro de compte",
+    "bankName": "Nom de la banque",
+    "addSuccess": "Destinataire enregistré",
+    "updateSuccess": "Destinataire mis à jour",
+    "deleteSuccess": "Destinataire supprimé"
+  },
+  "offline": {
+    "banner": "Vous êtes hors ligne",
+    "bannerSubtitle": "{{count}} transfert(s) en attente",
+    "syncing": "Synchronisation de {{count}} transfert(s) en attente...",
+    "syncComplete": "Tous les transferts soumis"
+  },
+  "notifications": {
+    "permissionTitle": "Restez informé de vos transferts",
+    "permissionBody": "Activez les notifications pour recevoir des mises à jour en temps réel sur vos transferts d'argent.",
+    "enableButton": "Activer les notifications",
+    "skipButton": "Pas maintenant"
   }
 }

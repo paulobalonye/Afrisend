@@ -207,6 +207,44 @@
     "fileTooLarge": "Arquivo muito grande. O tamanho máximo é {{maxSize}}MB.",
     "unsupportedFormat": "Formato de arquivo não suportado. Use JPG ou PNG.",
     "cameraPermissionDenied": "Acesso à câmera negado. Ative nas configurações.",
-    "galleryPermissionDenied": "Acesso à galeria negado. Ative nas configurações."
+    "galleryPermissionDenied": "Acesso à galeria negado. Ative nas configurações.",
+    "pushPermissionDenied": "Notificações desativadas. Ative nas configurações para receber atualizações de transferência.",
+    "offlineQueued": "Você está offline. Sua transferência será enviada automaticamente quando você se reconectar.",
+    "syncFailed": "Falha ao sincronizar transferências pendentes. Toque para tentar novamente."
+  },
+  "recipients": {
+    "title": "Destinatários salvos",
+    "addNew": "Adicionar destinatário",
+    "edit": "Editar destinatário",
+    "delete": "Excluir destinatário",
+    "deleteConfirm": "Tem certeza de que deseja remover {{name}}?",
+    "empty": "Nenhum destinatário salvo ainda",
+    "emptySubtitle": "Salve destinatários para enviar dinheiro mais rápido",
+    "nickname": "Apelido (opcional)",
+    "firstName": "Nome",
+    "lastName": "Sobrenome",
+    "country": "País",
+    "payoutMethod": "Método de pagamento",
+    "mobileMoney": "Dinheiro móvel",
+    "bankTransfer": "Transferência bancária",
+    "phoneNumber": "Número de telefone",
+    "network": "Rede móvel",
+    "accountNumber": "Número de conta",
+    "bankName": "Nome do banco",
+    "addSuccess": "Destinatário salvo",
+    "updateSuccess": "Destinatário atualizado",
+    "deleteSuccess": "Destinatário removido"
+  },
+  "offline": {
+    "banner": "Você está offline",
+    "bannerSubtitle": "{{count}} transferência(s) na fila",
+    "syncing": "Sincronizando {{count}} transferência(s) pendente(s)...",
+    "syncComplete": "Todas as transferências enviadas"
+  },
+  "notifications": {
+    "permissionTitle": "Fique atualizado sobre suas transferências",
+    "permissionBody": "Ative as notificações para receber atualizações em tempo real sobre suas transferências de dinheiro.",
+    "enableButton": "Ativar notificações",
+    "skipButton": "Agora não"
   }
 }

@@ -207,6 +207,44 @@
     "fileTooLarge": "File is too large. Maximum size is {{maxSize}}MB.",
     "unsupportedFormat": "Unsupported file format. Please use JPG or PNG.",
     "cameraPermissionDenied": "Camera access denied. Please enable it in Settings.",
-    "galleryPermissionDenied": "Photo library access denied. Please enable it in Settings."
+    "galleryPermissionDenied": "Photo library access denied. Please enable it in Settings.",
+    "pushPermissionDenied": "Notifications are disabled. Enable them in Settings to get transfer updates.",
+    "offlineQueued": "You're offline. Your transfer will be sent automatically when you reconnect.",
+    "syncFailed": "Failed to sync pending transfers. Tap to retry."
+  },
+  "recipients": {
+    "title": "Saved recipients",
+    "addNew": "Add recipient",
+    "edit": "Edit recipient",
+    "delete": "Delete recipient",
+    "deleteConfirm": "Are you sure you want to remove {{name}}?",
+    "empty": "No saved recipients yet",
+    "emptySubtitle": "Save recipients to send money faster",
+    "nickname": "Nickname (optional)",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "country": "Country",
+    "payoutMethod": "Payout method",
+    "mobileMoney": "Mobile money",
+    "bankTransfer": "Bank transfer",
+    "phoneNumber": "Phone number",
+    "network": "Mobile network",
+    "accountNumber": "Account number",
+    "bankName": "Bank name",
+    "addSuccess": "Recipient saved",
+    "updateSuccess": "Recipient updated",
+    "deleteSuccess": "Recipient removed"
+  },
+  "offline": {
+    "banner": "You're offline",
+    "bannerSubtitle": "{{count}} transfer(s) queued",
+    "syncing": "Syncing {{count}} pending transfer(s)...",
+    "syncComplete": "All transfers submitted"
+  },
+  "notifications": {
+    "permissionTitle": "Stay updated on your transfers",
+    "permissionBody": "Enable notifications to get real-time updates on your money transfers.",
+    "enableButton": "Enable notifications",
+    "skipButton": "Not now"
   }
 }

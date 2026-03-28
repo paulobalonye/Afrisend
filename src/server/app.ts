@@ -13,6 +13,8 @@ import type { IOtpService } from './services/otpService';
 import type { IAuthService } from './services/authService';
 import type { IKycService } from './services/kycService';
 import type { IRemittanceService } from './services/remittanceService';
+import type { IUserService } from './services/userService';
+import type { ITransactionService } from './services/transactionService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -20,13 +22,17 @@ import { createKycRouter } from './routes/kyc';
 import { createRemittanceRouter } from './routes/remittance';
 import { createBankRouter } from './routes/bank';
 import { createWebhooksRouter } from './routes/webhooks';
+import { createTransactionRouter } from './routes/transactions';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
+import { requireAuth } from './middleware/requireAuth';
 
 export type AppServices = {
   otpService: IOtpService;
   authService: IAuthService;
   kycService: IKycService;
   remittanceService: IRemittanceService;
+  userService: IUserService;
+  transactionService: ITransactionService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -43,11 +49,12 @@ export function createApp(services: AppServices): Application {
 
   // ── API v1 routes ─────────────────────────────────────────────────────────
   app.use('/v1/auth', createAuthRouter(services.otpService, services.authService));
-  app.use('/v1/users', createUsersRouter(services.authService));
+  app.use('/v1/users', createUsersRouter(services.authService, services.userService));
   app.use('/v1/kyc', createKycRouter(services.kycService));
   app.use('/v1/remittance', createRemittanceRouter(services.remittanceService));
   app.use('/v1/bank', createBankRouter(services.remittanceService));
   app.use('/v1/payment', createWebhooksRouter(services.remittanceService));
+  app.use('/v1/transactions', requireAuth, createTransactionRouter(services.transactionService));
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((_req, res) => {

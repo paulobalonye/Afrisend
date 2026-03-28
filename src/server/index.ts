@@ -11,6 +11,8 @@ import { DefaultOtpService } from './services/otpService';
 import { DefaultAuthService } from './services/authService';
 import { DefaultKycService } from './services/kycService';
 import { DefaultRemittanceService } from './services/remittanceService';
+import { DefaultUserService } from './services/userService';
+import { DefaultTransactionService } from './services/transactionService';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -19,6 +21,8 @@ const app = createApp({
   authService: new DefaultAuthService(),
   kycService: new DefaultKycService(),
   remittanceService: new DefaultRemittanceService(),
+  userService: new DefaultUserService(),
+  transactionService: new DefaultTransactionService(),
 });
 
 app.listen(PORT, () => {

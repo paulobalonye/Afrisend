@@ -11,6 +11,7 @@ import type { IOtpService } from '@/server/services/otpService';
 import type { IKycService } from '@/server/services/kycService';
 import type { IRemittanceService } from '@/server/services/remittanceService';
 import type { IAuthService } from '@/server/services/authService';
+import type { IUserService } from '@/server/services/userService';
 
 // ─── Mock service implementations ────────────────────────────────────────────
 
@@ -56,6 +57,16 @@ const mockRemittanceService: IRemittanceService = {
   handleYellowCardWebhook: jest.fn().mockResolvedValue({ received: true }),
 };
 
+const mockUserService: IUserService = {
+  getProfile: jest.fn().mockResolvedValue({ id: 'usr-1', email: null, phone: null, firstName: 'Ada', lastName: 'Obi', displayName: null, residenceCountry: null, preferredCurrency: null, notificationPreferences: { email: true, sms: true, push: true }, kycTier: 0, kycStatus: 'none', monthlyLimit: 0, createdAt: '2026-01-01T00:00:00Z' }),
+  updateProfile: jest.fn().mockResolvedValue({ id: 'usr-1', email: null, phone: null, firstName: 'Ada', lastName: 'Obi', displayName: 'Ada Obi', residenceCountry: null, preferredCurrency: null, notificationPreferences: { email: true, sms: true, push: true }, kycTier: 0, kycStatus: 'none', monthlyLimit: 0, createdAt: '2026-01-01T00:00:00Z' }),
+  listRecipients: jest.fn().mockResolvedValue([]),
+  createRecipient: jest.fn().mockResolvedValue({ id: 'rec-1', userId: 'usr-1', name: 'John', country: 'KE', payoutMethod: 'mobile_money', accountDetails: { type: 'mobile_money', phoneNumber: '+254700', provider: 'M-Pesa' }, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' }),
+  updateRecipient: jest.fn().mockResolvedValue({ id: 'rec-1', userId: 'usr-1', name: 'John Updated', country: 'KE', payoutMethod: 'mobile_money', accountDetails: { type: 'mobile_money', phoneNumber: '+254700', provider: 'M-Pesa' }, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' }),
+  deleteRecipient: jest.fn().mockResolvedValue(undefined),
+  updateTierFromKyc: jest.fn().mockResolvedValue({ id: 'usr-1', email: null, phone: null, firstName: 'Ada', lastName: 'Obi', displayName: null, residenceCountry: null, preferredCurrency: null, notificationPreferences: { email: true, sms: true, push: true }, kycTier: 1, kycStatus: 'approved', monthlyLimit: 500, createdAt: '2026-01-01T00:00:00Z' }),
+};
+
 // ─── App setup ───────────────────────────────────────────────────────────────
 
 let app: Express.Application;
@@ -66,6 +77,7 @@ beforeAll(() => {
     authService: mockAuthService,
     kycService: mockKycService,
     remittanceService: mockRemittanceService,
+    userService: mockUserService,
   });
 });
 

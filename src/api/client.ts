@@ -117,6 +117,14 @@ export async function patch<T>(path: string, body?: unknown, config?: AxiosReque
   return response.data.data;
 }
 
+export async function del<T>(path: string, config?: AxiosRequestConfig): Promise<T> {
+  const response: AxiosResponse<ApiResponse<T>> = await apiClient.delete(path, config);
+  if (!response.data.success) {
+    throw new ApiError(response.status, response.data.error ?? 'Request failed');
+  }
+  return response.data.data as T;
+}
+
 export async function uploadFile<T>(
   path: string,
   fileUri: string,
