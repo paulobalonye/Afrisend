@@ -96,6 +96,10 @@ export type GetRatesRequest = {
 };
 
 export type InitiatePaymentRequest = {
+  /**
+   * Caller-supplied idempotency key. MUST be a UUID v4 string.
+   * Duplicate keys with the same payment parameters are safely deduplicated by the backend.
+   */
   idempotencyKey: string;
   quoteId: string;
   corridorId: string;
@@ -106,28 +110,72 @@ export type InitiatePaymentRequest = {
   senderNote?: string;
 };
 
-// ─── Circuit Breaker (shared across all YellowCard calls) ────────────────────
+/** Structured audit metadata for YellowCard operations (avoids loose Record<string, unknown>). */
+export type YellowCardAuditMetadata =
+  | { corridorId: string; sourceAmount: number }
+  | { corridorId: string; sourceCurrency: string; sourceAmount: number; quoteId: string };
 
-const yellowcardCircuitBreaker = new CircuitBreaker({
+// ─── Circuit Breakers (separate instances for read vs write operations) ───────
+//
+// HIGH-3 fix: read ops (listCorridors, getRates, getPaymentStatus, getSettlement)
+// use readCircuitBreaker; write ops (initiatePayment) use writeCircuitBreaker.
+// This prevents a surge of write failures from blocking status-check reads.
+
+export const readCircuitBreaker = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeoutMs: 30_000,
+});
+
+export const writeCircuitBreaker = new CircuitBreaker({
   failureThreshold: 5,
   resetTimeoutMs: 30_000,
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * HIGH-1 fix: use crypto.randomUUID() instead of Math.random() for
+ * cryptographically secure request-tracking IDs.
+ */
 function generateRequestId(): string {
-  return `yc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return `yc-${crypto.randomUUID()}`;
+}
+
+/** Regex for valid paymentId values — alphanumeric, hyphens, and underscores, 8–64 chars. */
+const PAYMENT_ID_RE = /^[a-zA-Z0-9_-]{8,64}$/;
+
+/**
+ * HIGH-2 fix: validate paymentId before URL interpolation to prevent path traversal.
+ * Throws a descriptive error for any input that does not match the expected format.
+ */
+function validatePaymentId(paymentId: string): void {
+  if (!PAYMENT_ID_RE.test(paymentId)) {
+    throw new Error(
+      `Invalid paymentId: must match ^[a-zA-Z0-9_-]{8,64}$, got "${paymentId}"`,
+    );
+  }
+}
+
+/**
+ * MEDIUM-2 fix: sanitise error messages before writing them to the audit log.
+ * Strips control characters (including newlines) and truncates to 256 chars to
+ * prevent log injection and excessive storage.
+ */
+function sanitiseErrorCode(message: string): string {
+  // eslint-disable-next-line no-control-regex
+  return message.replace(/[\x00-\x1F\x7F-\x9F]/g, ' ').slice(0, 256);
 }
 
 async function callWithAudit<T>(
   operation: string,
+  circuitBreaker: CircuitBreaker,
   fn: () => Promise<T>,
-  auditMetadata?: Record<string, unknown>,
+  auditMetadata?: YellowCardAuditMetadata,
 ): Promise<T> {
   const requestId = generateRequestId();
   const start = Date.now();
   try {
-    const result = await yellowcardCircuitBreaker.execute(() =>
+    const result = await circuitBreaker.execute(() =>
       withRetry(fn, { maxAttempts: 3, baseDelayMs: 300 }),
     );
     auditLog({
@@ -140,7 +188,9 @@ async function callWithAudit<T>(
     });
     return result;
   } catch (err) {
-    const errorCode = err instanceof Error ? err.message : 'UNKNOWN';
+    // MEDIUM-2: sanitise the error message before persisting to audit log
+    const rawMessage = err instanceof Error ? err.message : 'UNKNOWN';
+    const errorCode = sanitiseErrorCode(rawMessage);
     auditLog({
       service: 'yellowcard',
       operation,
@@ -158,7 +208,9 @@ async function callWithAudit<T>(
 
 /** Returns all corridors from the backend (may include non-YellowCard corridors). */
 export async function listCorridors(): Promise<Corridor[]> {
-  return callWithAudit('listCorridors', () => get<Corridor[]>('/remittance/corridors'));
+  return callWithAudit('listCorridors', readCircuitBreaker, () =>
+    get<Corridor[]>('/remittance/corridors'),
+  );
 }
 
 /**
@@ -167,7 +219,7 @@ export async function listCorridors(): Promise<Corridor[]> {
  * (EGP, MAD, ETB, etc.).
  */
 export async function listSupportedCorridors(): Promise<Corridor[]> {
-  const all = await callWithAudit('listSupportedCorridors', () =>
+  const all = await callWithAudit('listSupportedCorridors', readCircuitBreaker, () =>
     get<Corridor[]>('/remittance/corridors'),
   );
   return all.filter((c) => SUPPORTED_CORRIDOR_CURRENCIES.includes(c.destinationCurrency));
@@ -189,6 +241,7 @@ export async function getRates(request: GetRatesRequest): Promise<RateQuote> {
 
   return callWithAudit(
     'getRates',
+    readCircuitBreaker,
     () => get<RateQuote>('/remittance/v2/rates', { params }),
     { corridorId: request.corridorId, sourceAmount: request.sourceAmount },
   );
@@ -202,6 +255,7 @@ export async function initiatePayment(request: InitiatePaymentRequest): Promise<
   // Deliberately exclude recipient PII from audit metadata
   return callWithAudit(
     'initiatePayment',
+    writeCircuitBreaker,
     () => post<Payment>('/remittance/payments', request),
     {
       corridorId: request.corridorId,
@@ -213,13 +267,17 @@ export async function initiatePayment(request: InitiatePaymentRequest): Promise<
 }
 
 export async function getPaymentStatus(paymentId: string): Promise<Payment> {
-  return callWithAudit('getPaymentStatus', () =>
-    get<Payment>(`/remittance/payments/${paymentId}`),
+  // HIGH-2: validate paymentId before URL interpolation
+  validatePaymentId(paymentId);
+  return callWithAudit('getPaymentStatus', readCircuitBreaker, () =>
+    get<Payment>(`/remittance/payments/${encodeURIComponent(paymentId)}`),
   );
 }
 
 export async function getSettlement(paymentId: string): Promise<Settlement> {
-  return callWithAudit('getSettlement', () =>
-    get<Settlement>(`/remittance/payments/${paymentId}/settlement`),
+  // HIGH-2: validate paymentId before URL interpolation
+  validatePaymentId(paymentId);
+  return callWithAudit('getSettlement', readCircuitBreaker, () =>
+    get<Settlement>(`/remittance/payments/${encodeURIComponent(paymentId)}/settlement`),
   );
 }

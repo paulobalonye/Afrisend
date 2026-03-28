@@ -375,3 +375,127 @@ describe('VOLATILE_CORRIDOR_CURRENCIES', () => {
     VOLATILE_CORRIDOR_CURRENCIES.forEach((c) => expect(typeof c).toBe('string'));
   });
 });
+
+// ─── HIGH-1: Weak idempotency key entropy ────────────────────────────────────
+
+describe('HIGH-1: generateRequestId uses crypto.randomUUID (not Math.random)', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('does not call Math.random() during listCorridors', async () => {
+    const spy = jest.spyOn(Math, 'random');
+    mockGet.mockResolvedValueOnce([mockCorridor]);
+    await listCorridors();
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('does not call Math.random() during initiatePayment', async () => {
+    const spy = jest.spyOn(Math, 'random');
+    mockPost.mockResolvedValueOnce(mockPayment);
+    await initiatePayment({
+      idempotencyKey: 'idem-key-1',
+      quoteId: 'quote-abc123',
+      corridorId: 'corridor-ng',
+      sourceCurrency: 'USDC',
+      sourceAmount: 100,
+      recipient: {
+        name: 'John Doe',
+        accountNumber: '0123456789',
+        bankCode: '058',
+        bankName: 'GTBank',
+      },
+    });
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('does not call Math.random() during getPaymentStatus', async () => {
+    const spy = jest.spyOn(Math, 'random');
+    mockGet.mockResolvedValueOnce(mockPayment);
+    await getPaymentStatus('pay-xyz789');
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+});
+
+// ─── HIGH-2: Unvalidated paymentId in URL path ───────────────────────────────
+
+describe('HIGH-2: paymentId validation before URL interpolation', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it.each([
+    ['../../etc/passwd'],
+    ['../admin'],
+    [''],
+    ['short'],
+    ['a'.repeat(65)],
+    ['has spaces here'],
+    ['has/slash'],
+    ['<script>xss</script>'],
+  ])('rejects invalid paymentId "%s" in getPaymentStatus', async (paymentId) => {
+    await expect(getPaymentStatus(paymentId)).rejects.toThrow(/invalid paymentId/i);
+  });
+
+  it.each([
+    ['../../etc/passwd'],
+    ['../admin'],
+    [''],
+    ['short'],
+    ['has/slash'],
+    ['<script>'],
+  ])('rejects invalid paymentId "%s" in getSettlement', async (paymentId) => {
+    await expect(getSettlement(paymentId)).rejects.toThrow(/invalid paymentId/i);
+  });
+
+  it('accepts valid alphanumeric paymentId in getPaymentStatus', async () => {
+    mockGet.mockResolvedValueOnce(mockPayment);
+    const result = await getPaymentStatus('pay-xyz789');
+    expect(result).toEqual(mockPayment);
+  });
+
+  it('accepts valid alphanumeric paymentId in getSettlement', async () => {
+    mockGet.mockResolvedValueOnce(mockSettlement);
+    const result = await getSettlement('pay-xyz789');
+    expect(result).toEqual(mockSettlement);
+  });
+
+  it('accepts minimum-length (8 char) paymentId', async () => {
+    mockGet.mockResolvedValueOnce(mockPayment);
+    const result = await getPaymentStatus('abcdef12');
+    expect(result).toEqual(mockPayment);
+  });
+
+  it('accepts maximum-length (64 char) paymentId', async () => {
+    mockGet.mockResolvedValueOnce(mockPayment);
+    const result = await getPaymentStatus('a'.repeat(64));
+    expect(result).toEqual(mockPayment);
+  });
+
+  it('URL-encodes paymentId when constructing path in getPaymentStatus', async () => {
+    mockGet.mockResolvedValueOnce(mockPayment);
+    await getPaymentStatus('pay-xyz789');
+    // The get call must use the encoded (or at minimum safe) paymentId
+    expect(mockGet).toHaveBeenCalledWith('/remittance/payments/pay-xyz789');
+  });
+});
+
+// ─── MEDIUM-2: err.message truncation in audit errorCode ─────────────────────
+
+describe('MEDIUM-2: error message sanitisation in audit errorCode', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('truncates errorCode to at most 256 characters', async () => {
+    const longMessage = 'x'.repeat(512);
+    mockGet.mockRejectedValueOnce(new Error(longMessage));
+    await expect(listCorridors()).rejects.toThrow();
+    const call = mockAuditLog.mock.calls[0][0];
+    expect((call.errorCode ?? '').length).toBeLessThanOrEqual(256);
+  });
+
+  it('strips newline characters from errorCode', async () => {
+    mockGet.mockRejectedValueOnce(new Error('line1\nline2\r\nline3'));
+    await expect(listCorridors()).rejects.toThrow();
+    const call = mockAuditLog.mock.calls[0][0];
+    expect(call.errorCode ?? '').not.toMatch(/[\r\n]/);
+  });
+});
