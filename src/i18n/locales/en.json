@@ -1,0 +1,212 @@
+{
+  "common": {
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip",
+    "done": "Done",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "tryAgain": "Try again",
+    "or": "or",
+    "and": "and",
+    "continue": "Continue",
+    "submit": "Submit",
+    "save": "Save",
+    "edit": "Edit"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "invalidOtp": "Invalid code. Please check and try again",
+    "otpExpired": "Code has expired. Please request a new one",
+    "nameTooShort": "Name must be at least 2 characters"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Send money home,\ninstantly.",
+      "subtitle": "Fast, secure transfers to 30+ African countries. Built for the diaspora.",
+      "cta": "Get Started",
+      "signIn": "Already have an account? Sign in",
+      "features": {
+        "fast": "Transfers in minutes",
+        "secure": "Bank-level security",
+        "affordable": "Low fees, great rates"
+      }
+    },
+    "slide1": {
+      "title": "Send to 30+ countries",
+      "description": "Nigeria, Ghana, Kenya, Senegal, and more — we cover the whole continent."
+    },
+    "slide2": {
+      "title": "Arrive in minutes",
+      "description": "Most transfers complete in under 5 minutes via mobile money or bank deposit."
+    },
+    "slide3": {
+      "title": "Trusted & regulated",
+      "description": "Licensed and compliant. Your money is safe with us."
+    },
+    "phone": {
+      "title": "Enter your phone number",
+      "subtitle": "We'll send you a verification code",
+      "placeholder": "Phone number",
+      "sendCode": "Send code",
+      "disclaimer": "By continuing, you agree to our Terms of Service and Privacy Policy",
+      "changeNumber": "Change number"
+    },
+    "otp": {
+      "title": "Enter the code",
+      "subtitle": "We sent a 6-digit code to {{phone}}",
+      "resend": "Resend code",
+      "resendIn": "Resend in {{seconds}}s",
+      "verify": "Verify"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "You're almost there",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "password": "Create password",
+      "confirmPassword": "Confirm password",
+      "createAccount": "Create account",
+      "alreadyHaveAccount": "Already have an account? Sign in"
+    },
+    "profileSetup": {
+      "title": "Tell us about yourself",
+      "subtitle": "Help us personalize your experience",
+      "dateOfBirth": "Date of birth",
+      "nationality": "Nationality",
+      "residenceCountry": "Country of residence",
+      "purpose": "Purpose of transfers",
+      "purposes": {
+        "family": "Supporting family",
+        "business": "Business payments",
+        "savings": "Personal savings",
+        "education": "Education",
+        "other": "Other"
+      }
+    }
+  },
+  "kyc": {
+    "intro": {
+      "title": "Verify your identity",
+      "subtitle": "We're required by law to verify your identity before you can send money",
+      "why": "Why do we need this?",
+      "whyExplained": "Identity verification protects you and complies with financial regulations. Your data is encrypted and secure.",
+      "steps": {
+        "id": "Government ID",
+        "selfie": "Selfie",
+        "address": "Proof of address"
+      },
+      "startVerification": "Start verification",
+      "timeEstimate": "Takes about 5 minutes"
+    },
+    "idUpload": {
+      "title": "Upload your ID",
+      "subtitle": "Choose your document type",
+      "passport": "Passport",
+      "nationalId": "National ID",
+      "driverLicense": "Driver's license",
+      "frontSide": "Front of document",
+      "backSide": "Back of document (if applicable)",
+      "takePhoto": "Take a photo",
+      "chooseGallery": "Choose from gallery",
+      "instructions": {
+        "title": "For best results:",
+        "light": "Use good lighting",
+        "flat": "Place ID on a flat surface",
+        "clear": "Ensure all text is visible",
+        "noGlare": "Avoid glare and shadows"
+      },
+      "retake": "Retake",
+      "usePhoto": "Use this photo",
+      "uploaded": "Document uploaded"
+    },
+    "selfie": {
+      "title": "Take a selfie",
+      "subtitle": "Position your face within the frame",
+      "instructions": {
+        "title": "Tips for a good selfie:",
+        "light": "Face a light source",
+        "glasses": "Remove glasses if possible",
+        "neutral": "Keep a neutral expression",
+        "center": "Center your face"
+      },
+      "livenessCheck": "Liveness check",
+      "livenessInstructions": "Follow the on-screen prompts to complete the liveness check",
+      "capture": "Take selfie",
+      "retake": "Retake"
+    },
+    "address": {
+      "title": "Proof of address",
+      "subtitle": "Upload a document showing your current address",
+      "accepted": "Accepted documents:",
+      "types": {
+        "utilityBill": "Utility bill (last 3 months)",
+        "bankStatement": "Bank statement (last 3 months)",
+        "taxDocument": "Tax document",
+        "governmentLetter": "Government letter"
+      },
+      "uploadDocument": "Upload document",
+      "uploaded": "Document uploaded",
+      "requirements": "Must show your name and current address, dated within 3 months"
+    },
+    "status": {
+      "pending": {
+        "title": "Verification in progress",
+        "subtitle": "We're reviewing your documents. This usually takes 2-5 minutes.",
+        "checkBack": "We'll notify you when it's done"
+      },
+      "approved": {
+        "title": "Verified!",
+        "subtitle": "Your identity has been verified. You can now send money.",
+        "sendMoney": "Send money now"
+      },
+      "rejected": {
+        "title": "Verification failed",
+        "subtitle": "We couldn't verify your identity",
+        "reason": "Reason: {{reason}}",
+        "tryAgain": "Try again",
+        "support": "Contact support"
+      },
+      "moreInfoNeeded": {
+        "title": "More information needed",
+        "subtitle": "Please provide additional documents",
+        "provide": "Provide documents"
+      }
+    },
+    "tiers": {
+      "tier1": {
+        "name": "Basic",
+        "limit": "Send up to $500/month",
+        "requirements": "Phone + email"
+      },
+      "tier2": {
+        "name": "Verified",
+        "limit": "Send up to $5,000/month",
+        "requirements": "Government ID + selfie"
+      },
+      "tier3": {
+        "name": "Premium",
+        "limit": "Send up to $50,000/month",
+        "requirements": "Full KYC + proof of address"
+      }
+    }
+  },
+  "errors": {
+    "network": "Network error. Please check your connection.",
+    "serverError": "Server error. Please try again later.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "fileTooLarge": "File is too large. Maximum size is {{maxSize}}MB.",
+    "unsupportedFormat": "Unsupported file format. Please use JPG or PNG.",
+    "cameraPermissionDenied": "Camera access denied. Please enable it in Settings.",
+    "galleryPermissionDenied": "Photo library access denied. Please enable it in Settings."
+  }
+}

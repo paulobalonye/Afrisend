@@ -1,14 +1,29 @@
+import crypto from 'crypto';
 import type { WebhookEvent } from './types';
 
 /**
  * Verifies a Flutterwave webhook request by comparing the verif-hash header
- * value against the configured secret hash. Both values must be non-empty and equal.
+ * value against the configured secret hash using constant-time comparison.
+ *
+ * SERVER-SIDE USE ONLY. Do NOT import this module in mobile app code.
+ * FLUTTERWAVE_WEBHOOK_HASH must be sourced from environment variables only.
+ *
+ * Uses crypto.timingSafeEqual to prevent timing-based side-channel attacks.
+ * Both values must be non-empty and match exactly (case-sensitive).
  */
 export function verifyWebhookSignature(headerValue: string, secretHash: string): boolean {
   if (!headerValue || !secretHash) {
     return false;
   }
-  return headerValue === secretHash;
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(headerValue, 'utf8'),
+      Buffer.from(secretHash, 'utf8'),
+    );
+  } catch {
+    // Buffers differ in length or encoding — treat as invalid
+    return false;
+  }
 }
 
 /**

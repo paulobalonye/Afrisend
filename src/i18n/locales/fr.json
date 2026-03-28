@@ -1,0 +1,212 @@
+{
+  "common": {
+    "next": "Suivant",
+    "back": "Retour",
+    "skip": "Passer",
+    "done": "Terminé",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "retry": "Réessayer",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "tryAgain": "Réessayer",
+    "or": "ou",
+    "and": "et",
+    "continue": "Continuer",
+    "submit": "Soumettre",
+    "save": "Enregistrer",
+    "edit": "Modifier"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "invalidPhone": "Veuillez entrer un numéro de téléphone valide",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "invalidOtp": "Code invalide. Veuillez vérifier et réessayer",
+    "otpExpired": "Le code a expiré. Veuillez en demander un nouveau",
+    "nameTooShort": "Le nom doit contenir au moins 2 caractères"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Envoyez de l'argent\ninstantanément.",
+      "subtitle": "Transferts rapides et sécurisés vers plus de 30 pays africains.",
+      "cta": "Commencer",
+      "signIn": "Déjà un compte ? Se connecter",
+      "features": {
+        "fast": "Transferts en quelques minutes",
+        "secure": "Sécurité niveau bancaire",
+        "affordable": "Frais réduits, bons taux"
+      }
+    },
+    "slide1": {
+      "title": "Envoi vers 30+ pays",
+      "description": "Nigeria, Ghana, Kenya, Sénégal et bien plus — nous couvrons tout le continent."
+    },
+    "slide2": {
+      "title": "Arrivée en quelques minutes",
+      "description": "La plupart des transferts sont complétés en moins de 5 minutes."
+    },
+    "slide3": {
+      "title": "Approuvé et réglementé",
+      "description": "Licencié et conforme. Votre argent est en sécurité avec nous."
+    },
+    "phone": {
+      "title": "Entrez votre numéro",
+      "subtitle": "Nous vous enverrons un code de vérification",
+      "placeholder": "Numéro de téléphone",
+      "sendCode": "Envoyer le code",
+      "disclaimer": "En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité",
+      "changeNumber": "Changer de numéro"
+    },
+    "otp": {
+      "title": "Entrez le code",
+      "subtitle": "Nous avons envoyé un code à 6 chiffres au {{phone}}",
+      "resend": "Renvoyer le code",
+      "resendIn": "Renvoyer dans {{seconds}}s",
+      "verify": "Vérifier"
+    },
+    "register": {
+      "title": "Créez votre compte",
+      "subtitle": "Vous y êtes presque",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "email": "Adresse email",
+      "password": "Créer un mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "createAccount": "Créer un compte",
+      "alreadyHaveAccount": "Déjà un compte ? Se connecter"
+    },
+    "profileSetup": {
+      "title": "Parlez-nous de vous",
+      "subtitle": "Aidez-nous à personnaliser votre expérience",
+      "dateOfBirth": "Date de naissance",
+      "nationality": "Nationalité",
+      "residenceCountry": "Pays de résidence",
+      "purpose": "Objet des transferts",
+      "purposes": {
+        "family": "Soutien familial",
+        "business": "Paiements professionnels",
+        "savings": "Épargne personnelle",
+        "education": "Éducation",
+        "other": "Autre"
+      }
+    }
+  },
+  "kyc": {
+    "intro": {
+      "title": "Vérifiez votre identité",
+      "subtitle": "La loi nous oblige à vérifier votre identité avant d'envoyer de l'argent",
+      "why": "Pourquoi avons-nous besoin de cela ?",
+      "whyExplained": "La vérification d'identité vous protège et respecte les réglementations financières.",
+      "steps": {
+        "id": "Pièce d'identité",
+        "selfie": "Selfie",
+        "address": "Justificatif de domicile"
+      },
+      "startVerification": "Démarrer la vérification",
+      "timeEstimate": "Environ 5 minutes"
+    },
+    "idUpload": {
+      "title": "Téléchargez votre pièce d'identité",
+      "subtitle": "Choisissez le type de document",
+      "passport": "Passeport",
+      "nationalId": "Carte d'identité nationale",
+      "driverLicense": "Permis de conduire",
+      "frontSide": "Recto du document",
+      "backSide": "Verso du document (si applicable)",
+      "takePhoto": "Prendre une photo",
+      "chooseGallery": "Choisir depuis la galerie",
+      "instructions": {
+        "title": "Pour de meilleurs résultats :",
+        "light": "Utilisez un bon éclairage",
+        "flat": "Posez la pièce d'identité sur une surface plane",
+        "clear": "Assurez-vous que tout le texte est visible",
+        "noGlare": "Évitez les reflets et les ombres"
+      },
+      "retake": "Reprendre",
+      "usePhoto": "Utiliser cette photo",
+      "uploaded": "Document téléchargé"
+    },
+    "selfie": {
+      "title": "Prenez un selfie",
+      "subtitle": "Positionnez votre visage dans le cadre",
+      "instructions": {
+        "title": "Conseils pour un bon selfie :",
+        "light": "Faites face à une source de lumière",
+        "glasses": "Retirez vos lunettes si possible",
+        "neutral": "Gardez une expression neutre",
+        "center": "Centrez votre visage"
+      },
+      "livenessCheck": "Vérification de vivacité",
+      "livenessInstructions": "Suivez les instructions à l'écran",
+      "capture": "Prendre le selfie",
+      "retake": "Reprendre"
+    },
+    "address": {
+      "title": "Justificatif de domicile",
+      "subtitle": "Téléchargez un document indiquant votre adresse actuelle",
+      "accepted": "Documents acceptés :",
+      "types": {
+        "utilityBill": "Facture de services publics (3 derniers mois)",
+        "bankStatement": "Relevé bancaire (3 derniers mois)",
+        "taxDocument": "Document fiscal",
+        "governmentLetter": "Courrier officiel"
+      },
+      "uploadDocument": "Télécharger le document",
+      "uploaded": "Document téléchargé",
+      "requirements": "Doit indiquer votre nom et adresse actuelle, daté de moins de 3 mois"
+    },
+    "status": {
+      "pending": {
+        "title": "Vérification en cours",
+        "subtitle": "Nous examinons vos documents. Cela prend généralement 2 à 5 minutes.",
+        "checkBack": "Nous vous notifierons quand c'est fait"
+      },
+      "approved": {
+        "title": "Vérifié !",
+        "subtitle": "Votre identité a été vérifiée. Vous pouvez maintenant envoyer de l'argent.",
+        "sendMoney": "Envoyer de l'argent"
+      },
+      "rejected": {
+        "title": "Vérification échouée",
+        "subtitle": "Nous n'avons pas pu vérifier votre identité",
+        "reason": "Raison : {{reason}}",
+        "tryAgain": "Réessayer",
+        "support": "Contacter le support"
+      },
+      "moreInfoNeeded": {
+        "title": "Informations supplémentaires requises",
+        "subtitle": "Veuillez fournir des documents supplémentaires",
+        "provide": "Fournir des documents"
+      }
+    },
+    "tiers": {
+      "tier1": {
+        "name": "Basique",
+        "limit": "Envoyez jusqu'à 500$/mois",
+        "requirements": "Téléphone + email"
+      },
+      "tier2": {
+        "name": "Vérifié",
+        "limit": "Envoyez jusqu'à 5 000$/mois",
+        "requirements": "Pièce d'identité + selfie"
+      },
+      "tier3": {
+        "name": "Premium",
+        "limit": "Envoyez jusqu'à 50 000$/mois",
+        "requirements": "KYC complet + justificatif de domicile"
+      }
+    }
+  },
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "fileTooLarge": "Le fichier est trop volumineux. La taille maximale est {{maxSize}}Mo.",
+    "unsupportedFormat": "Format de fichier non supporté. Veuillez utiliser JPG ou PNG.",
+    "cameraPermissionDenied": "Accès à la caméra refusé. Veuillez l'activer dans les paramètres.",
+    "galleryPermissionDenied": "Accès à la galerie refusé. Veuillez l'activer dans les paramètres."
+  }
+}

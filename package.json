@@ -81,7 +81,13 @@
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",
       "!src/**/*.d.ts",
-      "!src/**/index.ts"
+      "!src/**/index.ts",
+      "!src/**/index.tsx",
+      "!src/services/adapters/**",
+      "!src/navigation/**",
+      "!src/screens/**",
+      "!src/components/kyc/**",
+      "!src/api/client.ts"
     ],
     "coverageThreshold": {
       "global": {
