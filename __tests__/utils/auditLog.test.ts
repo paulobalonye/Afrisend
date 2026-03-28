@@ -1,4 +1,4 @@
-import { auditLog, AuditLogEntry, getAuditLog, clearAuditLog } from '../../src/utils/auditLog';
+import { auditLog, AuditLogEntry, getAuditLog, clearAuditLog, PII_KEYS } from '../../src/utils/auditLog';
 
 describe('auditLog', () => {
   beforeEach(() => {
@@ -92,5 +92,144 @@ describe('auditLog', () => {
       auditLog({ service: 'yellowcard', operation: 'getRates', requestId: `r${i}`, status: 'success' });
     }
     expect(getAuditLog().length).toBeLessThanOrEqual(1000);
+  });
+});
+
+describe('auditLog — PII stripping (M3)', () => {
+  beforeEach(() => {
+    clearAuditLog();
+  });
+
+  it('strips firstName from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { firstName: 'Alice', amount: 100 },
+    });
+    expect(getAuditLog()[0].metadata).toEqual({ amount: 100 });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('firstName');
+  });
+
+  it('strips lastName from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { lastName: 'Smith', currency: 'NGN' },
+    });
+    expect(getAuditLog()[0].metadata).toEqual({ currency: 'NGN' });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('lastName');
+  });
+
+  it('strips dateOfBirth from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { dateOfBirth: '1990-01-01', reference: 'ref-001' },
+    });
+    expect(getAuditLog()[0].metadata).toEqual({ reference: 'ref-001' });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('dateOfBirth');
+  });
+
+  it('strips email from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { email: 'alice@example.com', amount: 500 },
+    });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('email');
+  });
+
+  it('strips phone from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { phone: '+2348012345678', amount: 200 },
+    });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('phone');
+  });
+
+  it('strips ssn from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { ssn: '123-45-6789', amount: 200 },
+    });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('ssn');
+  });
+
+  it('strips nationalId from metadata', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { nationalId: 'AB123456', amount: 200 },
+    });
+    expect(getAuditLog()[0].metadata).not.toHaveProperty('nationalId');
+  });
+
+  it('strips multiple PII keys at once', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { firstName: 'Alice', lastName: 'Smith', email: 'a@b.com', amount: 100, currency: 'NGN' },
+    });
+    const meta = getAuditLog()[0].metadata!;
+    expect(meta).toEqual({ amount: 100, currency: 'NGN' });
+    expect(meta).not.toHaveProperty('firstName');
+    expect(meta).not.toHaveProperty('lastName');
+    expect(meta).not.toHaveProperty('email');
+  });
+
+  it('preserves non-PII metadata fields unchanged', () => {
+    auditLog({
+      service: 'test',
+      operation: 'op',
+      requestId: 'r1',
+      status: 'success',
+      metadata: { amount: 1000, currency: 'NGN', reference: 'ref-abc', status: 'NEW' },
+    });
+    expect(getAuditLog()[0].metadata).toEqual({
+      amount: 1000,
+      currency: 'NGN',
+      reference: 'ref-abc',
+      status: 'NEW',
+    });
+  });
+
+  it('handles undefined metadata gracefully', () => {
+    auditLog({ service: 'test', operation: 'op', requestId: 'r1', status: 'success' });
+    expect(getAuditLog()[0].metadata).toBeUndefined();
+  });
+
+  it('handles empty metadata object', () => {
+    auditLog({ service: 'test', operation: 'op', requestId: 'r1', status: 'success', metadata: {} });
+    expect(getAuditLog()[0].metadata).toEqual({});
+  });
+
+  it('exports PII_KEYS as a non-empty array of strings', () => {
+    expect(Array.isArray(PII_KEYS)).toBe(true);
+    expect(PII_KEYS.length).toBeGreaterThan(0);
+    PII_KEYS.forEach((key) => expect(typeof key).toBe('string'));
+  });
+
+  it('does not mutate the original metadata object passed by caller', () => {
+    const original = { firstName: 'Bob', amount: 50 };
+    auditLog({ service: 'test', operation: 'op', requestId: 'r1', status: 'success', metadata: original });
+    expect(original).toHaveProperty('firstName', 'Bob');
   });
 });

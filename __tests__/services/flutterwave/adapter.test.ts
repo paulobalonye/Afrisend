@@ -345,3 +345,78 @@ describe('createFlutterwaveAdapter — configuration validation', () => {
     expect(() => createFlutterwaveAdapter({ secretKey: '' })).toThrow('FLUTTERWAVE_SECRET_KEY is required');
   });
 });
+
+describe('createFlutterwaveAdapter — amount validation guard (L1)', () => {
+  let adapter: FlutterwaveAdapter;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockedAxios.create.mockReturnValue({
+      post: mockPost,
+      get: mockGet,
+      interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
+    } as unknown as ReturnType<typeof axios.create>);
+    adapter = createFlutterwaveAdapter({ secretKey: TEST_SECRET_KEY });
+  });
+
+  it('throws immediately when amount is zero', async () => {
+    await expect(
+      adapter.initiateTransfer({
+        accountNumber: '0690000032',
+        bankCode: '044',
+        accountName: 'Test',
+        amount: 0,
+        narration: 'test',
+        reference: 'ref-zero',
+      }),
+    ).rejects.toThrow('Transfer amount must be greater than zero');
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('throws immediately when amount is negative', async () => {
+    await expect(
+      adapter.initiateTransfer({
+        accountNumber: '0690000032',
+        bankCode: '044',
+        accountName: 'Test',
+        amount: -100,
+        narration: 'test',
+        reference: 'ref-neg',
+      }),
+    ).rejects.toThrow('Transfer amount must be greater than zero');
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('does not throw for a positive amount (proceeds to API call)', async () => {
+    mockPost.mockResolvedValueOnce({
+      data: {
+        status: 'success',
+        message: 'Transfer Queued Successfully',
+        data: {
+          id: 1,
+          account_number: '0690000032',
+          bank_code: '044',
+          full_name: 'Test',
+          amount: 1,
+          currency: 'NGN',
+          narration: 'test',
+          reference: 'ref-positive',
+          status: 'NEW',
+          created_at: '2026-03-28T10:00:00.000Z',
+        },
+      },
+    });
+
+    await expect(
+      adapter.initiateTransfer({
+        accountNumber: '0690000032',
+        bankCode: '044',
+        accountName: 'Test',
+        amount: 1,
+        narration: 'test',
+        reference: 'ref-positive',
+      }),
+    ).resolves.toBeDefined();
+    expect(mockPost).toHaveBeenCalledTimes(1);
+  });
+});

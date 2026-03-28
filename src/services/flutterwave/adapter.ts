@@ -117,6 +117,10 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
   }
 
   async function initiateTransfer(request: InitiateTransferRequest): Promise<TransferResult> {
+    if (request.amount <= 0) {
+      throw new Error('Transfer amount must be greater than zero');
+    }
+
     const requestId = `transfer-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
