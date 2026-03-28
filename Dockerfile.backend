@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies first (better layer caching)
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps --omit=dev=false 2>/dev/null || npm install --legacy-peer-deps
+
+COPY tsconfig.json ./
+COPY src/server ./src/server
+COPY src/services ./src/services
+COPY src/api ./src/api
+COPY src/utils ./src/utils
+
+EXPOSE 3000
+
+CMD ["npx", "ts-node", "--project", "tsconfig.json", "src/server/index.ts"]
