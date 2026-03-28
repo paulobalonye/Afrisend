@@ -14,17 +14,23 @@
   },
   "dependencies": {
     "@afrisend/shared": "*",
+    "@otplib/preset-default": "^12.0.1",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "ioredis": "^5.10.1",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "pg": "^8.20.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
@@ -42,10 +48,23 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "tsconfig.test.json"
+      }
+    },
     "moduleNameMapper": {
       "^@afrisend/shared(.*)$": "<rootDir>/../../packages/shared/src$1",
       "^@/(.*)$": "<rootDir>/src/$1"
     },
+    "collectCoverageFrom": [
+      "src/services/jwtService.ts",
+      "src/services/loginRateLimiter.ts",
+      "src/services/mfaService.ts",
+      "src/services/authService.ts",
+      "src/services/refreshTokenStore.ts",
+      "src/middleware/requireAuth.ts"
+    ],
     "coverageThreshold": {
       "global": {
         "lines": 80

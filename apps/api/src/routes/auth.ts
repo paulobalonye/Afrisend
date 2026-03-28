@@ -1,10 +1,17 @@
 import { Router } from 'express';
 import type { IOtpService } from '../services/otpService';
 import type { IAuthService } from '../services/authService';
+import type { MfaService } from '../services/mfaService';
 import { ok, badRequest } from '../middleware/errorHandler';
 
-export function createAuthRouter(otpService: IOtpService, authService: IAuthService): Router {
+export function createAuthRouter(
+  otpService: IOtpService,
+  authService: IAuthService,
+  mfaService?: MfaService
+): Router {
   const router = Router();
+
+  // ─── Existing OTP flows (unchanged) ─────────────────────────────────────────
 
   // POST /auth/otp/send
   router.post('/otp/send', async (req, res, next) => {
@@ -76,6 +83,8 @@ export function createAuthRouter(otpService: IOtpService, authService: IAuthServ
     }
   });
 
+  // ─── Auth endpoints ──────────────────────────────────────────────────────────
+
   // POST /auth/register
   router.post('/register', async (req, res, next) => {
     try {
@@ -93,13 +102,55 @@ export function createAuthRouter(otpService: IOtpService, authService: IAuthServ
     }
   });
 
-  // POST /auth/refresh
-  router.post('/refresh', async (req, res, next) => {
+  // POST /auth/login
+  router.post('/login', async (req, res, next) => {
     try {
-      const { refreshToken } = req.body as Record<string, unknown>;
+      const { email, password, deviceFingerprint } = req.body as Record<string, unknown>;
+      if (!email || typeof email !== 'string') return badRequest(res, 'email is required');
+      if (!password || typeof password !== 'string') return badRequest(res, 'password is required');
+
+      const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim()
+        ?? req.socket.remoteAddress
+        ?? 'unknown';
+
+      const result = await authService.login({
+        email,
+        password,
+        deviceFingerprint: typeof deviceFingerprint === 'string' ? deviceFingerprint : 'unknown',
+        ip,
+      });
+      return ok(res, result);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // POST /auth/token/refresh
+  router.post('/token/refresh', async (req, res, next) => {
+    try {
+      const { refreshToken, deviceFingerprint } = req.body as Record<string, unknown>;
       if (!refreshToken || typeof refreshToken !== 'string') return badRequest(res, 'refreshToken is required');
 
-      const result = await authService.refreshToken(refreshToken);
+      const result = await authService.refreshToken(
+        refreshToken,
+        typeof deviceFingerprint === 'string' ? deviceFingerprint : 'unknown'
+      );
+      return ok(res, result);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // Keep legacy /auth/refresh for backwards compat
+  router.post('/refresh', async (req, res, next) => {
+    try {
+      const { refreshToken, deviceFingerprint } = req.body as Record<string, unknown>;
+      if (!refreshToken || typeof refreshToken !== 'string') return badRequest(res, 'refreshToken is required');
+
+      const result = await authService.refreshToken(
+        refreshToken,
+        typeof deviceFingerprint === 'string' ? deviceFingerprint : 'unknown'
+      );
       return ok(res, result);
     } catch (err) {
       return next(err);
@@ -110,13 +161,48 @@ export function createAuthRouter(otpService: IOtpService, authService: IAuthServ
   router.post('/logout', async (req, res, next) => {
     try {
       const authHeader = req.headers.authorization;
-      const token = authHeader?.replace('Bearer ', '');
-      await authService.logout(token);
+      const accessToken = authHeader?.replace('Bearer ', '');
+      const { refreshToken } = req.body as Record<string, unknown>;
+      await authService.logout(
+        accessToken,
+        typeof refreshToken === 'string' ? refreshToken : undefined
+      );
       return ok(res, { loggedOut: true });
     } catch (err) {
       return next(err);
     }
   });
+
+  // ─── TOTP MFA endpoints (Phase 2 foundation) ─────────────────────────────────
+
+  if (mfaService) {
+    // POST /auth/mfa/setup — generate a TOTP secret for the authenticated user
+    router.post('/mfa/setup', async (req, res, next) => {
+      try {
+        const { email } = req.body as Record<string, unknown>;
+        if (!email || typeof email !== 'string') return badRequest(res, 'email is required');
+
+        const result = mfaService.generateSecret(email, 'AfriSend');
+        return ok(res, { otpauthUrl: result.otpauthUrl, secret: result.secret });
+      } catch (err) {
+        return next(err);
+      }
+    });
+
+    // POST /auth/mfa/verify — verify a TOTP code
+    router.post('/mfa/verify', async (req, res, next) => {
+      try {
+        const { secret, token } = req.body as Record<string, unknown>;
+        if (!secret || typeof secret !== 'string') return badRequest(res, 'secret is required');
+        if (!token || typeof token !== 'string') return badRequest(res, 'token is required');
+
+        const valid = mfaService.verifyToken(secret, token);
+        return ok(res, { valid });
+      } catch (err) {
+        return next(err);
+      }
+    });
+  }
 
   return router;
 }

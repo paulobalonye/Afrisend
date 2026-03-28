@@ -11,5 +11,5 @@
       "@afrisend/shared/*": ["../../packages/shared/src/*"]
     }
   },
-  "include": ["src", "__tests__"]
+  "include": ["src"]
 }
