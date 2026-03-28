@@ -1,13 +1,17 @@
 import { Router } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { IOtpService } from '../services/otpService';
 import type { IAuthService } from '../services/authService';
 import type { MfaService } from '../services/mfaService';
 import { ok, badRequest } from '../middleware/errorHandler';
 
+type AsyncMiddleware = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+
 export function createAuthRouter(
   otpService: IOtpService,
   authService: IAuthService,
-  mfaService?: MfaService
+  mfaService?: MfaService,
+  requireAuth?: AsyncMiddleware
 ): Router {
   const router = Router();
 
@@ -173,31 +177,89 @@ export function createAuthRouter(
     }
   });
 
-  // ─── TOTP MFA endpoints (Phase 2 foundation) ─────────────────────────────────
+  // ─── MFA endpoints (only registered when MFA service is available) ──────────
 
-  if (mfaService) {
-    // POST /auth/mfa/setup — generate a TOTP secret for the authenticated user
-    router.post('/mfa/setup', async (req, res, next) => {
+  if (mfaService && requireAuth) {
+    // POST /auth/mfa/login — complete login with TOTP or backup code
+    router.post('/mfa/login', async (req, res, next) => {
       try {
+        const { challengeToken, code, deviceFingerprint } = req.body as Record<string, unknown>;
+        if (!challengeToken || typeof challengeToken !== 'string') return badRequest(res, 'challengeToken is required');
+        if (!code || typeof code !== 'string') return badRequest(res, 'code is required');
+
+        const result = await authService.completeMfaLogin(
+          challengeToken,
+          code,
+          typeof deviceFingerprint === 'string' ? deviceFingerprint : 'unknown'
+        );
+        return ok(res, result);
+      } catch (err) {
+        return next(err);
+      }
+    });
+    // POST /auth/mfa/setup — begin MFA enrollment (returns QR secret + backup codes)
+    router.post('/mfa/setup', requireAuth, async (req, res, next) => {
+      try {
+        const userId = req.userId;
+        if (!userId) return badRequest(res, 'Authentication required');
+
         const { email } = req.body as Record<string, unknown>;
         if (!email || typeof email !== 'string') return badRequest(res, 'email is required');
 
-        const result = mfaService.generateSecret(email, 'AfriSend');
-        return ok(res, { otpauthUrl: result.otpauthUrl, secret: result.secret });
+        const result = await mfaService.setup(userId, email);
+        return ok(res, {
+          otpauthUrl: result.otpauthUrl,
+          secret: result.secret,
+        });
       } catch (err) {
         return next(err);
       }
     });
 
-    // POST /auth/mfa/verify — verify a TOTP code
-    router.post('/mfa/verify', async (req, res, next) => {
+    // POST /auth/mfa/confirm — confirm setup with a TOTP code to activate MFA
+    router.post('/mfa/confirm', requireAuth, async (req, res, next) => {
       try {
-        const { secret, token } = req.body as Record<string, unknown>;
-        if (!secret || typeof secret !== 'string') return badRequest(res, 'secret is required');
+        const userId = req.userId;
+        if (!userId) return badRequest(res, 'Authentication required');
+
+        const { token } = req.body as Record<string, unknown>;
         if (!token || typeof token !== 'string') return badRequest(res, 'token is required');
 
-        const valid = mfaService.verifyToken(secret, token);
-        return ok(res, { valid });
+        const result = await mfaService.confirmSetup(userId, token);
+        if (!result) return badRequest(res, 'Invalid TOTP code. Scan QR and try again.');
+
+        return ok(res, { mfaEnabled: true, backupCodes: result.backupCodes });
+      } catch (err) {
+        return next(err);
+      }
+    });
+
+    // POST /auth/mfa/disable — disable MFA (requires valid TOTP code)
+    router.post('/mfa/disable', requireAuth, async (req, res, next) => {
+      try {
+        const userId = req.userId;
+        if (!userId) return badRequest(res, 'Authentication required');
+
+        const { token } = req.body as Record<string, unknown>;
+        if (!token || typeof token !== 'string') return badRequest(res, 'token is required');
+
+        const disabled = await mfaService.disable(userId, token);
+        if (!disabled) return badRequest(res, 'Invalid TOTP code');
+
+        return ok(res, { mfaEnabled: false });
+      } catch (err) {
+        return next(err);
+      }
+    });
+
+    // GET /auth/mfa/status — check if MFA is enabled for the user
+    router.get('/mfa/status', requireAuth, async (req, res, next) => {
+      try {
+        const userId = req.userId;
+        if (!userId) return badRequest(res, 'Authentication required');
+
+        const status = await mfaService.getStatus(userId);
+        return ok(res, status);
       } catch (err) {
         return next(err);
       }

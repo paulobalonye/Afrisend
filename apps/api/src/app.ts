@@ -18,6 +18,7 @@ import type { ITransactionService } from './services/transactionService';
 import type { IFxRateService } from './services/fxRateService';
 import type { IPayoutRoutingService } from './services/payoutRoutingService';
 import type { IAdminService } from './services/adminService';
+import type { MfaService } from './services/mfaService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -30,7 +31,7 @@ import { createFxRouter } from './routes/fx';
 import { createPayoutRouter } from './routes/payout';
 import { createAdminRouter } from './routes/admin';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
-import { requireAuth } from './middleware/requireAuth';
+import { requireAuth, createRequireAuth } from './middleware/requireAuth';
 import { createRequireAdmin } from './middleware/requireAdmin';
 import { JwtService } from './services/jwtService';
 import { createMetricsMiddleware, createMetricsRouter } from './middleware/metricsMiddleware';
@@ -48,6 +49,7 @@ export type AppServices = {
   payoutRoutingService: IPayoutRoutingService;
   adminService: IAdminService;
   jwtService: JwtService;
+  mfaService?: MfaService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -69,7 +71,13 @@ export function createApp(services: AppServices): Application {
   });
 
   // ── API v1 routes ─────────────────────────────────────────────────────────
-  app.use('/v1/auth', createAuthRouter(services.otpService, services.authService));
+  const authMiddleware = createRequireAuth(services.jwtService);
+  app.use('/v1/auth', createAuthRouter(
+    services.otpService,
+    services.authService,
+    services.mfaService,
+    authMiddleware
+  ));
   app.use('/v1/users', createUsersRouter(services.authService, services.userService));
   app.use('/v1/kyc', createKycRouter(services.kycService));
   app.use('/v1/remittance', createRemittanceRouter(services.remittanceService));

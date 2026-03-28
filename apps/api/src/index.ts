@@ -24,6 +24,8 @@ import {
   SandboxOrangeMoneyProvider,
   SandboxFlutterwavePayoutProvider,
 } from './services/payoutProviders';
+import { MfaService } from './services/mfaService';
+import { InMemoryMfaStore } from './services/mfaStore';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -37,6 +39,8 @@ const payoutRoutingService = new PayoutRoutingService([
   new SandboxOrangeMoneyProvider(),
 ]);
 
+const mfaService = new MfaService(new InMemoryMfaStore());
+
 const app = createApp({
   otpService: new DefaultOtpService(),
   authService: new DefaultAuthService(),
@@ -48,6 +52,7 @@ const app = createApp({
   adminService: new DefaultAdminService(),
   jwtService,
   payoutRoutingService,
+  mfaService,
 });
 
 app.listen(PORT, () => {
