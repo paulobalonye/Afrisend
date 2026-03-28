@@ -2,6 +2,14 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { withRetry } from './retry';
 import { createAuditLogger } from './audit';
+import {
+  validateTransferId,
+  validateNuban,
+  validateBankCode,
+  validateAmount,
+  validateNarration,
+  validateCallbackUrl,
+} from './validation';
 import type {
   FlutterwaveAdapter,
   FlutterwaveConfig,
@@ -14,6 +22,9 @@ import type {
 import { FlutterwaveError } from './types';
 
 const FLUTTERWAVE_BASE_URL = 'https://api.flutterwave.com/v3';
+
+const TRANSFER_TIMEOUT_MS = 30_000;
+const ACCOUNT_RESOLVE_TIMEOUT_MS = 10_000;
 
 // Only retry on transient/network errors, not on FlutterwaveError (API-level failures)
 function isRetryable(error: unknown): boolean {
@@ -44,19 +55,24 @@ type TransferData = {
   complete_time?: string;
 };
 
-function buildRequestConfig(secretKey: string, idempotencyKey?: string) {
+function buildRequestConfig(secretKey: string, idempotencyKey?: string, timeoutMs?: number) {
   return {
     headers: {
       Authorization: `Bearer ${secretKey}`,
       'Content-Type': 'application/json',
       ...(idempotencyKey ? { 'x-idempotency-key': idempotencyKey } : {}),
     },
+    ...(timeoutMs !== undefined ? { timeout: timeoutMs } : {}),
   };
 }
 
 function assertSuccess<T>(response: FlwApiResponse<T>): T {
   if (response.status !== 'success' || response.data === null) {
-    throw new FlutterwaveError(response.message);
+    // Sanitize: expose only the message string, not raw API internals
+    const safeMessage = typeof response.message === 'string' && response.message.length > 0
+      ? response.message
+      : 'Flutterwave API request failed';
+    throw new FlutterwaveError(safeMessage);
   }
   return response.data;
 }
@@ -77,7 +93,12 @@ function createHttpClient(secretKey: string, baseUrl: string): AxiosInstance {
  * Reads FLUTTERWAVE_SECRET_KEY from config (populated from env vars by the caller).
  */
 export function createFlutterwaveAdapter(config: FlutterwaveConfig): FlutterwaveAdapter {
-  const { secretKey, baseUrl = FLUTTERWAVE_BASE_URL, maxRetries = 3 } = config;
+  const {
+    secretKey,
+    baseUrl = FLUTTERWAVE_BASE_URL,
+    maxRetries = 3,
+    callbackAllowedDomains,
+  } = config;
 
   if (!secretKey) {
     throw new Error('FLUTTERWAVE_SECRET_KEY is required');
@@ -86,7 +107,11 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
   const client = createHttpClient(secretKey, baseUrl);
 
   async function verifyAccount(request: VerifyAccountRequest): Promise<VerifyAccountResult> {
-    const requestId = `verify-${Date.now()}`;
+    // HIGH-2: validate financial fields before any network call
+    validateNuban(request.accountNumber);
+    validateBankCode(request.bankCode);
+
+    const requestId = `verify-${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
 
     try {
@@ -95,7 +120,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
           const response = await client.post<FlwApiResponse<ResolveAccountData>>(
             '/accounts/resolve',
             { account_number: request.accountNumber, account_bank: request.bankCode },
-            buildRequestConfig(secretKey),
+            buildRequestConfig(secretKey, undefined, ACCOUNT_RESOLVE_TIMEOUT_MS),
           );
           return assertSuccess(response.data);
         },
@@ -117,11 +142,18 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
   }
 
   async function initiateTransfer(request: InitiateTransferRequest): Promise<TransferResult> {
-    if (request.amount <= 0) {
-      throw new Error('Transfer amount must be greater than zero');
+    // HIGH-2: validate all financial fields before any network call
+    validateAmount(request.amount);
+    validateNuban(request.accountNumber);
+    validateBankCode(request.bankCode);
+    validateNarration(request.narration);
+
+    // HIGH-3: validate callbackUrl if provided
+    if (request.callbackUrl !== undefined) {
+      validateCallbackUrl(request.callbackUrl, callbackAllowedDomains);
     }
 
-    const requestId = `transfer-${Date.now()}`;
+    const requestId = `transfer-${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
 
     try {
@@ -139,7 +171,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
               reference: request.reference,
               ...(request.callbackUrl ? { callback_url: request.callbackUrl } : {}),
             },
-            buildRequestConfig(secretKey, request.reference),
+            buildRequestConfig(secretKey, request.reference, TRANSFER_TIMEOUT_MS),
           );
           return assertSuccess(response.data);
         },
@@ -166,7 +198,10 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
   }
 
   async function getTransferStatus(transferId: string): Promise<TransferStatusResult> {
-    const requestId = `status-${Date.now()}`;
+    // HIGH-1: validate transferId to prevent path traversal
+    validateTransferId(transferId);
+
+    const requestId = `status-${crypto.randomUUID()}`;
     const timestamp = new Date().toISOString();
 
     try {
@@ -174,7 +209,7 @@ export function createFlutterwaveAdapter(config: FlutterwaveConfig): Flutterwave
         async () => {
           const response = await client.get<FlwApiResponse<TransferData>>(
             `/transfers/${transferId}`,
-            buildRequestConfig(secretKey),
+            buildRequestConfig(secretKey, undefined, ACCOUNT_RESOLVE_TIMEOUT_MS),
           );
           return assertSuccess(response.data);
         },

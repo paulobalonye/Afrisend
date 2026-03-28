@@ -71,9 +71,11 @@ describe('withRetry', () => {
     jest.restoreAllMocks();
 
     expect(delays.length).toBeGreaterThanOrEqual(2);
-    // Second delay should be double first (exponential backoff: 100, 200, ...)
+    // Second delay should be at least double the base (exponential backoff + up to 25% jitter)
+    // base=100ms: first delay in [100, 125], second in [200, 250]
     expect(delays[1]).toBeGreaterThanOrEqual(delays[0]);
-    expect(delays[1]).toBe(delays[0] * 2);
+    expect(delays[1]).toBeGreaterThanOrEqual(200);
+    expect(delays[1]).toBeLessThanOrEqual(250);
   });
 
   it('succeeds on last possible attempt', async () => {

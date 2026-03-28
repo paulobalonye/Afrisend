@@ -63,6 +63,8 @@ export type FlutterwaveConfig = {
   secretKey: string;
   baseUrl?: string;
   maxRetries?: number;
+  /** Allowlist of hostnames permitted for callbackUrl (e.g. ['webhook.example.com']). Required when callbackUrl is used. */
+  callbackAllowedDomains?: string[];
 };
 
 export class FlutterwaveError extends Error {

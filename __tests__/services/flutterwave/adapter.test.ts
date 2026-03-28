@@ -233,7 +233,8 @@ describe('createFlutterwaveAdapter', () => {
         },
       });
 
-      await expect(adapter.getTransferStatus('nonexistent')).rejects.toThrow('Transfer not found');
+      // Use a valid numeric ID; the adapter validates format before the API call
+      await expect(adapter.getTransferStatus('9999999')).rejects.toThrow('Transfer not found');
     });
   });
 });
@@ -248,7 +249,10 @@ describe('createFlutterwaveAdapter — optional fields', () => {
       get: mockGet,
       interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
     } as unknown as ReturnType<typeof axios.create>);
-    adapter = createFlutterwaveAdapter({ secretKey: TEST_SECRET_KEY });
+    adapter = createFlutterwaveAdapter({
+      secretKey: TEST_SECRET_KEY,
+      callbackAllowedDomains: ['example.com'],
+    });
   });
 
   it('includes callbackUrl in transfer payload when provided', async () => {
@@ -369,7 +373,7 @@ describe('createFlutterwaveAdapter — amount validation guard (L1)', () => {
         narration: 'test',
         reference: 'ref-zero',
       }),
-    ).rejects.toThrow('Transfer amount must be greater than zero');
+    ).rejects.toThrow('Invalid amount');
     expect(mockPost).not.toHaveBeenCalled();
   });
 
@@ -383,7 +387,7 @@ describe('createFlutterwaveAdapter — amount validation guard (L1)', () => {
         narration: 'test',
         reference: 'ref-neg',
       }),
-    ).rejects.toThrow('Transfer amount must be greater than zero');
+    ).rejects.toThrow('Invalid amount');
     expect(mockPost).not.toHaveBeenCalled();
   });
 
