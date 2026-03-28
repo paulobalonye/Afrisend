@@ -4,21 +4,6 @@ import { TransactionHistoryScreen } from '../TransactionHistoryScreen';
 import * as transactionsApi from '@/api/endpoints/transactions';
 
 jest.mock('@/api/endpoints/transactions');
-jest.mock('@/theme', () => ({
-  useTheme: () => ({
-    colors: {
-      primary: '#6C47FF',
-      background: '#FFFFFF',
-      surface: '#F8F7FF',
-      border: '#E5E1FF',
-      text: '#1A1033',
-      textSecondary: '#6B7280',
-      success: '#10B981',
-      error: '#EF4444',
-      accent: '#F59E0B',
-    },
-  }),
-}));
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
@@ -89,10 +74,10 @@ describe('TransactionHistoryScreen', () => {
   });
 
   it('filters transactions by status', async () => {
-    const { getByText, queryByText } = render(<TransactionHistoryScreen />);
+    const { getByText, getByTestId, queryByText } = render(<TransactionHistoryScreen />);
     await waitFor(() => expect(queryByText('Adaeze Okafor')).toBeTruthy());
 
-    fireEvent.press(getByText('Completed'));
+    fireEvent.press(getByTestId('filter-chip-completed'));
     expect(getByText('Adaeze Okafor')).toBeTruthy();
     expect(queryByText('Kwame Mensah')).toBeNull();
   });

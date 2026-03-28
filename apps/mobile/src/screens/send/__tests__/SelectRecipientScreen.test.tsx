@@ -4,21 +4,6 @@ import { SelectRecipientScreen } from '../SelectRecipientScreen';
 import * as recipientsApi from '@/api/endpoints/recipients';
 
 jest.mock('@/api/endpoints/recipients');
-jest.mock('@/theme', () => ({
-  useTheme: () => ({
-    colors: {
-      primary: '#6C47FF',
-      background: '#FFFFFF',
-      surface: '#F8F7FF',
-      border: '#E5E1FF',
-      text: '#1A1033',
-      textSecondary: '#6B7280',
-      success: '#10B981',
-      error: '#EF4444',
-      accent: '#F59E0B',
-    },
-  }),
-}));
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({

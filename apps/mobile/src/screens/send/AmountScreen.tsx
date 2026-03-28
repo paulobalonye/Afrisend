@@ -125,6 +125,7 @@ export function AmountScreen() {
   }
 
   function handleNext() {
+    if (!isReady) return;
     navigation.navigate('SendPaymentMethod');
   }
 

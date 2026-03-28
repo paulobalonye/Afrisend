@@ -44,9 +44,19 @@ const mockPayment: Payment = {
 
 describe('remittanceStore', () => {
   beforeEach(() => {
-    // Reset store state before each test
+    // Reset entire store state before each test (paymentHistory is not cleared by resetFlow)
     act(() => {
-      useRemittanceStore.getState().resetFlow();
+      useRemittanceStore.setState({
+        corridors: [],
+        selectedCorridor: null,
+        sourceAmount: '',
+        currentQuote: null,
+        recipient: null,
+        currentPayment: null,
+        paymentHistory: [],
+        isLoading: false,
+        error: null,
+      });
     });
   });
 

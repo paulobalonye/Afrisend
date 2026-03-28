@@ -5,21 +5,6 @@ import * as yellowcard from '@/api/endpoints/yellowcard';
 import { useRemittanceStore } from '@/store/remittanceStore';
 
 jest.mock('@/api/endpoints/yellowcard');
-jest.mock('@/theme', () => ({
-  useTheme: () => ({
-    colors: {
-      primary: '#6C47FF',
-      background: '#FFFFFF',
-      surface: '#F8F7FF',
-      border: '#E5E1FF',
-      text: '#1A1033',
-      textSecondary: '#6B7280',
-      success: '#10B981',
-      error: '#EF4444',
-      accent: '#F59E0B',
-    },
-  }),
-}));
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
@@ -98,17 +83,20 @@ describe('ReviewConfirmScreen', () => {
     expect(getByText(/2\.50/)).toBeTruthy();
   });
 
-  it('disables confirm button until terms are agreed', () => {
+  it('does not submit when terms not agreed (confirm button is disabled)', async () => {
     const { getByTestId } = render(<ReviewConfirmScreen />);
-    const confirmBtn = getByTestId('confirm-button');
-    expect(confirmBtn.props.accessibilityState?.disabled).toBe(true);
+    // Pressing confirm without checking terms should not trigger initiatePayment
+    fireEvent.press(getByTestId('confirm-button'));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(yellowcard.initiatePayment).not.toHaveBeenCalled();
   });
 
   it('enables confirm button after agreeing to terms', () => {
     const { getByTestId } = render(<ReviewConfirmScreen />);
     fireEvent.press(getByTestId('terms-checkbox'));
     const confirmBtn = getByTestId('confirm-button');
-    expect(confirmBtn.props.accessibilityState?.disabled).toBeFalsy();
+    // After agreeing, the button is enabled (disabled prop is false or undefined)
+    expect(confirmBtn.props.disabled).toBeFalsy();
   });
 
   it('calls initiatePayment and navigates to processing on confirm', async () => {

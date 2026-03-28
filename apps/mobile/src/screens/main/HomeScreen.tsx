@@ -8,9 +8,9 @@ import { Typography } from '@/components/ui/Typography';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/theme';
 import { useAuthStore } from '@/store/authStore';
-import type { RootStackParamList } from '@/navigation/index';
+import type { MainStackParamList } from '@/navigation/MainNavigator';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -79,10 +79,10 @@ export function HomeScreen() {
           </Typography>
           <View style={styles.actionsGrid}>
             {[
-              { icon: '💸', label: 'Send money', testID: 'send-money-action' },
-              { icon: '📊', label: 'Transactions', testID: 'transactions-action' },
-              { icon: '👥', label: 'Recipients', testID: 'recipients-action' },
-              { icon: '⚙️', label: 'Settings', testID: 'settings-action' },
+              { icon: '💸', label: 'Send money', testID: 'send-money-action', onPress: () => navigation.navigate('SendMoney') },
+              { icon: '📊', label: 'Transactions', testID: 'transactions-action', onPress: () => navigation.navigate('TransactionHistory') },
+              { icon: '👥', label: 'Recipients', testID: 'recipients-action', onPress: () => {} },
+              { icon: '⚙️', label: 'Settings', testID: 'settings-action', onPress: () => {} },
             ].map((action) => (
               <TouchableOpacity
                 key={action.label}
@@ -92,6 +92,7 @@ export function HomeScreen() {
                 ]}
                 accessibilityRole="button"
                 testID={action.testID}
+                onPress={action.onPress}
               >
                 <Typography style={styles.actionIcon}>{action.icon}</Typography>
                 <Typography variant="bodySmall" style={{ color: theme.colors.text }} center>

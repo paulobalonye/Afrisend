@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { v4 as uuidv4 } from 'uuid';
+
 import { Screen } from '@/components/ui/Screen';
 import { Typography } from '@/components/ui/Typography';
 import { Button } from '@/components/ui/Button';
@@ -54,14 +54,14 @@ export function ReviewConfirmScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleConfirm() {
-    if (!currentQuote || !recipient) return;
+    if (!termsAgreed || !currentQuote || !recipient) return;
 
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
       const payment = await initiatePayment({
-        idempotencyKey: uuidv4(),
+        idempotencyKey: crypto.randomUUID(),
         quoteId: currentQuote.quoteId,
         corridorId: currentQuote.corridorId,
         sourceCurrency: 'USDC',

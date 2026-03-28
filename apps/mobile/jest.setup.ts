@@ -59,5 +59,30 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
+// Mock @/theme to return the real lightTheme (avoids ThemeContext provider requirement)
+jest.mock('@/theme', () => {
+  const actual = jest.requireActual('@/theme');
+  return {
+    ...actual,
+    useTheme: () => actual.lightTheme,
+  };
+});
+
+// Initialize i18n with actual English translations for tests
+jest.mock('react-i18next', () => {
+  const actual = jest.requireActual('react-i18next');
+  const i18nModule = require('@/i18n');
+  const i18nInst = i18nModule.default || i18nModule;
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) =>
+        i18nInst.t(key, options),
+      i18n: i18nInst,
+    }),
+    Trans: ({ children }: any) => children,
+  };
+});
+
 // Silence console.warn for navigation mocks
 global.console.warn = jest.fn();

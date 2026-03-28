@@ -89,6 +89,7 @@ export function TransactionHistoryScreen() {
           return (
             <TouchableOpacity
               key={filter}
+              testID={`filter-chip-${filter}`}
               onPress={() => setActiveFilter(filter)}
               style={[
                 styles.filterChip,
