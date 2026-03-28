@@ -1,17 +1,46 @@
-FROM node:20-alpine
+# ─── Stage 1: Builder ─────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
+# Install all dependencies (including devDependencies for TypeScript compilation)
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps --omit=dev=false 2>/dev/null || npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
+# Copy TypeScript config and source files
 COPY tsconfig.json ./
 COPY src/server ./src/server
 COPY src/services ./src/services
 COPY src/api ./src/api
 COPY src/utils ./src/utils
 
+# Compile TypeScript to JavaScript
+RUN npx tsc --project tsconfig.json --outDir dist --skipLibCheck
+
+# ─── Stage 2: Production ──────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Install only production dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps --omit=dev
+
+# Copy compiled output from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Set file ownership to non-root user
+RUN chown -R nodeuser:nodejs /app
+
+# Switch to non-root user
+USER nodeuser
+
 EXPOSE 3000
 
-CMD ["npx", "ts-node", "--project", "tsconfig.json", "src/server/index.ts"]
+ENV NODE_ENV=production
+
+CMD ["node", "dist/server/index.js"]

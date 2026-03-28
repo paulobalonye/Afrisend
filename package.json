@@ -37,6 +37,8 @@
     "expo-font": "~13.0.0",
     "expo-image-picker": "~16.0.0",
     "expo-localization": "~16.0.0",
+    "expo-network": "~7.0.5",
+    "expo-notifications": "^0.29.14",
     "expo-secure-store": "~14.0.0",
     "expo-splash-screen": "~0.29.0",
     "expo-status-bar": "~2.0.1",
@@ -106,7 +108,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "lines": 80
+        "lines": 80,
+        "statements": 80,
+        "functions": 80,
+        "branches": 75
       }
     },
     "coveragePathIgnorePatterns": [
