@@ -29,6 +29,9 @@ import { createFxRouter } from './routes/fx';
 import { createPayoutRouter } from './routes/payout';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
 import { requireAuth } from './middleware/requireAuth';
+import { createMetricsMiddleware, createMetricsRouter } from './middleware/metricsMiddleware';
+import { createLoggerMiddleware } from './middleware/logger';
+import { Registry } from 'prom-client';
 
 export type AppServices = {
   otpService: IOtpService;
@@ -43,6 +46,12 @@ export type AppServices = {
 
 export function createApp(services: AppServices): Application {
   const app = express();
+
+  // ── Observability ─────────────────────────────────────────────────────────
+  const metricsRegistry = new Registry();
+  app.use(createLoggerMiddleware());
+  app.use(createMetricsMiddleware(metricsRegistry));
+  app.use(createMetricsRouter(metricsRegistry));
 
   // ── Middleware ────────────────────────────────────────────────────────────
   app.use(cors());

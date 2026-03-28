@@ -1,0 +1,246 @@
+{
+  "title": "AfriSend Platform Overview",
+  "uid": "afrisend-overview",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "tags": ["afrisend", "production"],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Transaction Success Rate by Corridor",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(transaction_success_total[5m])",
+          "legendFormat": "Success - {{corridor}}",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(transaction_failure_total[5m])",
+          "legendFormat": "Failure - {{corridor}} ({{reason}})",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Transaction Failure Rate (%)",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "100 * (rate(transaction_failure_total[5m]) / (rate(transaction_success_total[5m]) + rate(transaction_failure_total[5m]) + 0.0001))",
+          "legendFormat": "Failure %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 10,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1, "color": "yellow" },
+              { "value": 2, "color": "red" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "API Gateway p99 Latency",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.3, "color": "yellow" },
+              { "value": 0.5, "color": "red" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "API Gateway Throughput (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m])) by (method)",
+          "legendFormat": "{{method}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Payout Provider Latency (p95)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(payout_provider_latency_seconds_bucket[5m])) by (provider)",
+          "legendFormat": "{{provider}} p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "min": 0 }
+      }
+    },
+    {
+      "id": 6,
+      "title": "KYC Approval Rate by Tier",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(kyc_approval_total{status=\"approved\"}[5m]) by (tier)",
+          "legendFormat": "Approved - Tier {{tier}}",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(kyc_approval_total{status=\"rejected\"}[5m]) by (tier)",
+          "legendFormat": "Rejected - Tier {{tier}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Fraud Detection Triggers",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(fraud_detection_trigger_total[5m]) by (rule)",
+          "legendFormat": "{{rule}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Database Connection Pool Usage",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 24, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "db_connection_pool_used",
+          "legendFormat": "{{pool}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 15, "color": "yellow" },
+              { "value": 20, "color": "red" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "HTTP 5xx Error Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 18, "y": 24, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{status_code=~\"5..\"}[5m])",
+          "legendFormat": "5xx errors",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Service Uptime",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 32, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "avg_over_time(up{job=\"afrisend-backend\"}[1h]) * 100",
+          "legendFormat": "Uptime (1h)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 99.9, "color": "green" }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

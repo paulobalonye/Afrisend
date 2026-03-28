@@ -138,7 +138,91 @@ services:
       retries: 5
       start_period: 15s
 
+  # ── Prometheus ────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: afrisend_prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9090/-/healthy || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Alertmanager ─────────────────────────────────────────────────────────
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: afrisend_alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - '9093:9093'
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager:ro
+      - alertmanager_data:/alertmanager
+    environment:
+      PAGERDUTY_INTEGRATION_KEY_CRITICAL: ${PAGERDUTY_INTEGRATION_KEY_CRITICAL:-placeholder}
+      PAGERDUTY_INTEGRATION_KEY_WARNING: ${PAGERDUTY_INTEGRATION_KEY_WARNING:-placeholder}
+    depends_on:
+      - prometheus
+
+  # ── Grafana ───────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: afrisend_grafana
+    restart: unless-stopped
+    ports:
+      - '3001:3000'
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-afrisend_grafana}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── OpenTelemetry Collector ───────────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    container_name: afrisend_otel_collector
+    restart: unless-stopped
+    command: ['--config=/etc/otel-collector-config.yml']
+    volumes:
+      - ./monitoring/otel/otel-collector-config.yml:/etc/otel-collector-config.yml:ro
+    ports:
+      - '4317:4317'   # OTLP gRPC
+      - '4318:4318'   # OTLP HTTP
+    depends_on:
+      - prometheus
+
 volumes:
   postgres_data:
   redis_data:
   kong_db_data:
+  prometheus_data:
+  alertmanager_data:
+  grafana_data:
