@@ -1,5 +1,6 @@
 import {
   listCorridors,
+  listSupportedCorridors,
   getRates,
   initiatePayment,
   getPaymentStatus,
@@ -10,6 +11,8 @@ import {
   PaymentStatus,
   Settlement,
   InitiatePaymentRequest,
+  SUPPORTED_CORRIDOR_CURRENCIES,
+  VOLATILE_CORRIDOR_CURRENCIES,
 } from '../../src/api/endpoints/yellowcard';
 
 // Mock the API client
@@ -42,18 +45,31 @@ const mockAuditLog = auditLog as jest.MockedFunction<typeof auditLog>;
 
 const mockCorridor: Corridor = {
   id: 'corridor-ng',
-  sourceCurrency: 'USD',
+  sourceCurrency: 'USDC',
   destinationCurrency: 'NGN',
   destinationCountry: 'NG',
   destinationCountryName: 'Nigeria',
   minAmount: 10,
   maxAmount: 5000,
   isActive: true,
+  refreshIntervalSeconds: 60,
+};
+
+const mockUnsupportedCorridor: Corridor = {
+  id: 'corridor-eg',
+  sourceCurrency: 'USDC',
+  destinationCurrency: 'EGP',
+  destinationCountry: 'EG',
+  destinationCountryName: 'Egypt',
+  minAmount: 10,
+  maxAmount: 5000,
+  isActive: true,
+  refreshIntervalSeconds: 300,
 };
 
 const mockRateQuote: RateQuote = {
   corridorId: 'corridor-ng',
-  sourceCurrency: 'USD',
+  sourceCurrency: 'USDC',
   destinationCurrency: 'NGN',
   sourceAmount: 100,
   destinationAmount: 152000,
@@ -68,7 +84,7 @@ const mockPayment: Payment = {
   id: 'pay-xyz789',
   idempotencyKey: 'idem-key-1',
   corridorId: 'corridor-ng',
-  sourceCurrency: 'USD',
+  sourceCurrency: 'USDC',
   destinationCurrency: 'NGN',
   sourceAmount: 100,
   destinationAmount: 152000,
@@ -130,13 +146,28 @@ describe('listCorridors', () => {
 describe('getRates', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('fetches rates for given corridor and amount', async () => {
+  it('fetches rates from v2 endpoint for given corridor and amount', async () => {
     mockGet.mockResolvedValueOnce(mockRateQuote);
     const result = await getRates({ corridorId: 'corridor-ng', sourceAmount: 100 });
     expect(result).toEqual(mockRateQuote);
-    expect(mockGet).toHaveBeenCalledWith('/remittance/rates', {
+    expect(mockGet).toHaveBeenCalledWith('/remittance/v2/rates', {
       params: { corridorId: 'corridor-ng', sourceAmount: 100 },
     });
+  });
+
+  it('passes refreshIntervalSeconds to the request when provided', async () => {
+    mockGet.mockResolvedValueOnce(mockRateQuote);
+    await getRates({ corridorId: 'corridor-ng', sourceAmount: 100, refreshIntervalSeconds: 60 });
+    expect(mockGet).toHaveBeenCalledWith('/remittance/v2/rates', {
+      params: { corridorId: 'corridor-ng', sourceAmount: 100, refreshIntervalSeconds: 60 },
+    });
+  });
+
+  it('omits refreshIntervalSeconds from params when not provided', async () => {
+    mockGet.mockResolvedValueOnce(mockRateQuote);
+    await getRates({ corridorId: 'corridor-ng', sourceAmount: 100 });
+    const params = (mockGet.mock.calls[0][1] as { params: Record<string, unknown> }).params;
+    expect(params).not.toHaveProperty('refreshIntervalSeconds');
   });
 
   it('logs the API call with audit log', async () => {
@@ -163,6 +194,7 @@ describe('initiatePayment', () => {
     idempotencyKey: 'idem-key-1',
     quoteId: 'quote-abc123',
     corridorId: 'corridor-ng',
+    sourceCurrency: 'USDC',
     sourceAmount: 100,
     recipient: {
       name: 'John Doe',
@@ -186,6 +218,15 @@ describe('initiatePayment', () => {
     expect(mockPost).toHaveBeenCalledWith(
       '/remittance/payments',
       expect.objectContaining({ idempotencyKey: 'idem-key-1' }),
+    );
+  });
+
+  it('sends sourceCurrency USDC in request body', async () => {
+    mockPost.mockResolvedValueOnce(mockPayment);
+    await initiatePayment(paymentRequest);
+    expect(mockPost).toHaveBeenCalledWith(
+      '/remittance/payments',
+      expect.objectContaining({ sourceCurrency: 'USDC' }),
     );
   });
 
@@ -270,5 +311,67 @@ describe('getSettlement', () => {
     expect(mockAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({ service: 'yellowcard', operation: 'getSettlement', status: 'failure' }),
     );
+  });
+});
+
+describe('listSupportedCorridors', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls the same corridors endpoint as listCorridors', async () => {
+    mockGet.mockResolvedValueOnce([mockCorridor, mockUnsupportedCorridor]);
+    await listSupportedCorridors();
+    expect(mockGet).toHaveBeenCalledWith('/remittance/corridors');
+  });
+
+  it('returns only corridors whose destination currency is in SUPPORTED_CORRIDOR_CURRENCIES', async () => {
+    mockGet.mockResolvedValueOnce([mockCorridor, mockUnsupportedCorridor]);
+    const result = await listSupportedCorridors();
+    expect(result.every((c) => SUPPORTED_CORRIDOR_CURRENCIES.includes(c.destinationCurrency))).toBe(true);
+    expect(result.some((c) => c.destinationCurrency === 'EGP')).toBe(false);
+  });
+
+  it('returns NGN corridor when present', async () => {
+    mockGet.mockResolvedValueOnce([mockCorridor]);
+    const result = await listSupportedCorridors();
+    expect(result).toHaveLength(1);
+    expect(result[0].destinationCurrency).toBe('NGN');
+  });
+
+  it('logs with operation listSupportedCorridors', async () => {
+    mockGet.mockResolvedValueOnce([mockCorridor]);
+    await listSupportedCorridors();
+    expect(mockAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ service: 'yellowcard', operation: 'listSupportedCorridors', status: 'success' }),
+    );
+  });
+});
+
+describe('SUPPORTED_CORRIDOR_CURRENCIES', () => {
+  it('includes all 10 expected currencies', () => {
+    const expected = ['NGN', 'GHS', 'KES', 'UGX', 'TZS', 'RWF', 'ZAR', 'ZMW', 'XAF', 'XOF'];
+    expected.forEach((currency) => {
+      expect(SUPPORTED_CORRIDOR_CURRENCIES).toContain(currency);
+    });
+  });
+
+  it('does not include Flutterwave-only corridors like EGP, MAD, ETB', () => {
+    expect(SUPPORTED_CORRIDOR_CURRENCIES).not.toContain('EGP');
+    expect(SUPPORTED_CORRIDOR_CURRENCIES).not.toContain('MAD');
+    expect(SUPPORTED_CORRIDOR_CURRENCIES).not.toContain('ETB');
+  });
+
+  it('is a readonly array', () => {
+    expect(Array.isArray(SUPPORTED_CORRIDOR_CURRENCIES)).toBe(true);
+  });
+});
+
+describe('VOLATILE_CORRIDOR_CURRENCIES', () => {
+  it('includes NGN as a volatile corridor', () => {
+    expect(VOLATILE_CORRIDOR_CURRENCIES).toContain('NGN');
+  });
+
+  it('is a non-empty array of strings', () => {
+    expect(VOLATILE_CORRIDOR_CURRENCIES.length).toBeGreaterThan(0);
+    VOLATILE_CORRIDOR_CURRENCIES.forEach((c) => expect(typeof c).toBe('string'));
   });
 });
