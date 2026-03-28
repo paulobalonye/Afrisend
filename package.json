@@ -1,6 +1,11 @@
 {
-  "name": "afrisend-mobile",
+  "name": "afrisend",
   "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "main": "index.js",
   "scripts": {
     "start": "expo start",
@@ -11,8 +16,8 @@
     "test:integration": "jest --testPathPattern=__tests__/integration --watchAll=false --testTimeout=30000",
     "test:integration:coverage": "jest --testPathPattern=__tests__/integration --coverage --watchAll=false --testTimeout=30000",
     "test:all": "jest --watchAll=false --testTimeout=30000",
-    "server": "ts-node -r tsconfig-paths/register src/server/index.ts",
-    "lint": "eslint src --ext .ts,.tsx",
+    "server": "ts-node -r tsconfig-paths/register apps/api/src/index.ts",
+    "lint": "eslint apps packages --ext .ts,.tsx",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -81,6 +86,7 @@
     "jest-expo": "~52.0.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "turbo": "^2.3.3",
     "typescript": "^5.3.3"
   },
   "jest": {
@@ -92,19 +98,29 @@
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|zustand)"
     ],
+    "testMatch": [
+      "**/__tests__/**/*.{ts,tsx}",
+      "!**/apps/**/__tests__/**",
+      "!**/packages/**/__tests__/**"
+    ],
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@afrisend/shared(.*)$": "<rootDir>/packages/shared/src$1",
+      "^@/server/(.*)$": "<rootDir>/apps/api/src/$1",
+      "^@/services/(.*)$": "<rootDir>/apps/api/src/services/$1",
+      "^@/(.*)$": "<rootDir>/apps/mobile/src/$1"
     },
     "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
-      "!src/**/*.d.ts",
-      "!src/**/index.ts",
-      "!src/**/index.tsx",
-      "!src/services/adapters/**",
-      "!src/navigation/**",
-      "!src/screens/**",
-      "!src/components/kyc/**",
-      "!src/api/client.ts"
+      "apps/mobile/src/**/*.{ts,tsx}",
+      "apps/api/src/**/*.{ts,tsx}",
+      "packages/shared/src/**/*.{ts,tsx}",
+      "!**/*.d.ts",
+      "!**/index.ts",
+      "!**/index.tsx",
+      "!apps/api/src/services/adapters/**",
+      "!apps/mobile/src/navigation/**",
+      "!apps/mobile/src/screens/**",
+      "!apps/mobile/src/components/kyc/**",
+      "!apps/mobile/src/api/client.ts"
     ],
     "coverageThreshold": {
       "global": {

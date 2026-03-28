@@ -15,6 +15,7 @@ import type { IKycService } from './services/kycService';
 import type { IRemittanceService } from './services/remittanceService';
 import type { IUserService } from './services/userService';
 import type { ITransactionService } from './services/transactionService';
+import type { IFxRateService } from './services/fxRateService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -23,6 +24,7 @@ import { createRemittanceRouter } from './routes/remittance';
 import { createBankRouter } from './routes/bank';
 import { createWebhooksRouter } from './routes/webhooks';
 import { createTransactionRouter } from './routes/transactions';
+import { createFxRouter } from './routes/fx';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
 import { requireAuth } from './middleware/requireAuth';
 
@@ -33,6 +35,7 @@ export type AppServices = {
   remittanceService: IRemittanceService;
   userService: IUserService;
   transactionService: ITransactionService;
+  fxRateService: IFxRateService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -55,6 +58,7 @@ export function createApp(services: AppServices): Application {
   app.use('/v1/bank', createBankRouter(services.remittanceService));
   app.use('/v1/payment', createWebhooksRouter(services.remittanceService));
   app.use('/v1/transactions', requireAuth, createTransactionRouter(services.transactionService));
+  app.use('/v1/fx', createFxRouter(services.fxRateService));
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((_req, res) => {

@@ -12,6 +12,7 @@ import type { IKycService } from '@/server/services/kycService';
 import type { IRemittanceService } from '@/server/services/remittanceService';
 import type { IAuthService } from '@/server/services/authService';
 import type { IUserService } from '@/server/services/userService';
+import type { IFxRateService } from '@/server/services/fxRateService';
 
 // ─── Mock service implementations ────────────────────────────────────────────
 
@@ -67,6 +68,12 @@ const mockUserService: IUserService = {
   updateTierFromKyc: jest.fn().mockResolvedValue({ id: 'usr-1', email: null, phone: null, firstName: 'Ada', lastName: 'Obi', displayName: null, residenceCountry: null, preferredCurrency: null, notificationPreferences: { email: true, sms: true, push: true }, kycTier: 1, kycStatus: 'approved', monthlyLimit: 500, createdAt: '2026-01-01T00:00:00Z' }),
 };
 
+const mockFxRateService: IFxRateService = {
+  getCurrentRates: jest.fn().mockResolvedValue([]),
+  createQuote: jest.fn().mockResolvedValue({}),
+  validateAndLockQuote: jest.fn().mockResolvedValue({}),
+};
+
 // ─── App setup ───────────────────────────────────────────────────────────────
 
 let app: Express.Application;
@@ -78,6 +85,7 @@ beforeAll(() => {
     kycService: mockKycService,
     remittanceService: mockRemittanceService,
     userService: mockUserService,
+    fxRateService: mockFxRateService,
   });
 });
 

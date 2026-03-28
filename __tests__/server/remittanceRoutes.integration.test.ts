@@ -16,6 +16,7 @@ import { DefaultAuthService } from '@/server/services/authService';
 import { DefaultKycService } from '@/server/services/kycService';
 import { DefaultRemittanceService } from '@/server/services/remittanceService';
 import { DefaultUserService } from '@/server/services/userService';
+import { DefaultTransactionService } from '@/server/services/transactionService';
 
 function buildApp() {
   return createApp({
@@ -24,6 +25,7 @@ function buildApp() {
     kycService: new DefaultKycService(),
     remittanceService: new DefaultRemittanceService(),
     userService: new DefaultUserService(),
+    transactionService: new DefaultTransactionService(),
   });
 }
 

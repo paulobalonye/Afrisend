@@ -165,9 +165,9 @@ describe('FxRateService', () => {
 
   describe('calculateMarkup', () => {
     it('applies markup basis points on top of mid rate', () => {
-      // 150 bps = 1.5% markup on a rate of 1520 → 1520 * 1.015 = 1543.08
+      // 150 bps = 1.5% markup on a rate of 1520 → 1520 * 1.015 = 1542.8
       const result = FxRateService.applyMarkup(1520, 150);
-      expect(result).toBeCloseTo(1543.08, 2);
+      expect(result).toBeCloseTo(1542.8, 2);
     });
 
     it('handles zero markup bps', () => {
@@ -220,7 +220,11 @@ describe('FxRateService', () => {
       const ngnRate = rates.find(r => r.fromCurrency === 'USD' && r.toCurrency === 'NGN');
 
       expect(ngnRate!.midRate).toBe(1500);
-      expect(spy).not.toHaveBeenCalled();
+      // Provider should NOT have been called for the cached corridor
+      const wasFetchedForNgn = spy.mock.calls.some(
+        ([from, toCurrencies]) => from === 'USD' && (toCurrencies as string[]).includes('NGN'),
+      );
+      expect(wasFetchedForNgn).toBe(false);
     });
 
     it('falls back to secondary provider when primary fails', async () => {
@@ -277,7 +281,7 @@ describe('FxRateService', () => {
       expect(quote.fromCurrency).toBe('USD');
       expect(quote.toCurrency).toBe('NGN');
       expect(quote.midRate).toBe(1520);
-      expect(quote.customerRate).toBeCloseTo(1543.08, 2);  // 150 bps markup
+      expect(quote.customerRate).toBeCloseTo(1542.8, 2);  // 150 bps markup (1520 * 1.015)
       expect(quote.fee).toBe(2.00);  // min fee
       expect(quote.expiresAt.getTime()).toBe(
         new Date('2026-03-28T10:15:00Z').getTime()

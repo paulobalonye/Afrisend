@@ -24,8 +24,8 @@ import { DefaultOtpService } from '@/server/services/otpService';
 import { DefaultAuthService } from '@/server/services/authService';
 import { DefaultKycService } from '@/server/services/kycService';
 import { DefaultRemittanceService } from '@/server/services/remittanceService';
-import { DefaultUserService } from '@/server/services/userService';
-import { TIER_LIMITS } from '@/server/services/userService';
+import { DefaultUserService, TIER_LIMITS } from '@/server/services/userService';
+import { DefaultTransactionService } from '@/server/services/transactionService';
 
 // Minimal PNG buffer for KYC file uploads
 const MINIMAL_PNG = Buffer.from(
@@ -40,6 +40,7 @@ function buildApp(): Application {
     kycService: new DefaultKycService(),
     remittanceService: new DefaultRemittanceService(),
     userService: new DefaultUserService(),
+    transactionService: new DefaultTransactionService(),
   });
 }
 

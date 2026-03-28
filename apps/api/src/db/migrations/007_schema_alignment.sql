@@ -1,11 +1,15 @@
--- Migration 005: Align schemas with architecture spec §3.2 / §3.3
+-- Migration 007: Align schemas with architecture spec §3.2 / §3.3
+--
+-- Prereq: 005_recipients.sql already created the recipients table with
+--         account_details TEXT and a basic schema.
 --
 -- Changes:
 --   1. Add `version` (optimistic locking) to users, transactions, kyc_sessions
 --   2. Add `deleted_at` (soft delete) to users, transactions, bank_accounts
 --   3. Migrate money amount fields on transactions from NUMERIC → BIGINT
 --   4. Add `compliance_status` and `risk_score` to transactions
---   5. Create `recipients` table with encrypted account details
+--   5. Extend recipients: add `nickname`, rename account_details →
+--      account_details_encrypted to reflect app-layer encryption contract
 --   6. Add partial indexes idx_txn_status and idx_txn_compliance
 
 -- ─── 1. Optimistic locking: version column ────────────────────────────────────
@@ -47,31 +51,33 @@ ALTER TABLE transactions
   ADD COLUMN IF NOT EXISTS compliance_status TEXT NOT NULL DEFAULT 'pending',
   ADD COLUMN IF NOT EXISTS risk_score        SMALLINT;
 
--- ─── 5. Recipients table ─────────────────────────────────────────────────────
+-- ─── 5. Extend recipients table ──────────────────────────────────────────────
 --
--- Stores saved recipients per user.  account_details_encrypted holds
--- AES-256-GCM ciphertext of the JSON account payload (bank code, account
--- number, mobile wallet number, etc.) — encryption is handled at the
--- application layer before persistence.
+-- 005_recipients.sql created recipients with a plain `account_details TEXT`
+-- column.  The architecture spec (§3.3) requires:
+--   - `nickname TEXT` (optional display name for saved recipients)
+--   - `account_details_encrypted TEXT` (AES-256-GCM ciphertext, app-layer)
+--
+-- We rename the column to make the encryption contract explicit in the
+-- schema, and add nickname.
 
-CREATE TABLE IF NOT EXISTS recipients (
-  id                        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id                   UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  nickname                  TEXT,
-  country                   TEXT        NOT NULL,
-  payout_method             TEXT        NOT NULL
-                              CHECK (payout_method IN ('mobile_money', 'bank_transfer')),
-  account_details_encrypted TEXT        NOT NULL,  -- AES-256-GCM ciphertext (app-layer)
-  created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at                TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+ALTER TABLE recipients
+  ADD COLUMN IF NOT EXISTS nickname TEXT;
 
-CREATE INDEX IF NOT EXISTS recipients_user_idx
-  ON recipients (user_id, created_at DESC);
-
-CREATE TRIGGER recipients_updated_at
-  BEFORE UPDATE ON recipients
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+-- Rename account_details → account_details_encrypted only when the old
+-- column still exists (idempotency guard via DO block).
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'recipients'
+      AND column_name  = 'account_details'
+  ) THEN
+    ALTER TABLE recipients RENAME COLUMN account_details TO account_details_encrypted;
+  END IF;
+END;
+$$;
 
 -- ─── 6. Partial indexes on transactions ──────────────────────────────────────
 --
@@ -82,7 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_txn_status
   ON transactions (status, created_at DESC)
   WHERE status NOT IN ('completed', 'cancelled');
 
--- idx_txn_compliance: covers only flagged transactions for compliance queue.
+-- idx_txn_compliance: covers only flagged transactions for the compliance queue.
 
 CREATE INDEX IF NOT EXISTS idx_txn_compliance
   ON transactions (compliance_status, created_at DESC)
