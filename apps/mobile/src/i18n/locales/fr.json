@@ -246,5 +246,99 @@
     "permissionBody": "Activez les notifications pour recevoir des mises à jour en temps réel sur vos transferts d'argent.",
     "enableButton": "Activer les notifications",
     "skipButton": "Pas maintenant"
+  },
+  "send": {
+    "title": "Envoyer de l'argent",
+    "step1": {
+      "title": "Sélectionner un destinataire",
+      "subtitle": "À qui envoyez-vous de l'argent ?",
+      "searchPlaceholder": "Rechercher des destinataires",
+      "addNew": "Ajouter un nouveau destinataire",
+      "savedRecipients": "Destinataires enregistrés"
+    },
+    "step2": {
+      "title": "Saisir le montant",
+      "subtitle": "Combien envoyez-vous ?",
+      "sendLabel": "Vous envoyez",
+      "receiveLabel": "Ils reçoivent",
+      "switchDirection": "Changer de direction",
+      "rate": "Taux",
+      "fee": "Frais",
+      "total": "Total",
+      "rateLockedFor": "Taux bloqué pour {{time}}",
+      "rateExpired": "Taux expiré. Actualisation...",
+      "quoteRefreshing": "Actualisation du taux...",
+      "selectCorridor": "Sélectionner la destination",
+      "minAmount": "Minimum : {{amount}}",
+      "maxAmount": "Maximum : {{amount}}"
+    },
+    "step3": {
+      "title": "Mode de paiement",
+      "subtitle": "Comment voulez-vous payer ?",
+      "card": "Payer par carte",
+      "bankTransfer": "Virement bancaire",
+      "savedMethods": "Modes de paiement enregistrés",
+      "cardNumber": "Numéro de carte",
+      "expiryDate": "Date d'expiration",
+      "cvv": "CVV",
+      "cardholderName": "Nom du titulaire"
+    },
+    "step4": {
+      "title": "Vérifier et confirmer",
+      "subtitle": "Veuillez vérifier les détails avant de confirmer",
+      "youSend": "Vous envoyez",
+      "theyReceive": "Ils reçoivent",
+      "exchangeRate": "Taux de change",
+      "fees": "Frais",
+      "estimatedArrival": "Arrivée estimée",
+      "arrivalTime": "En moins de 5 minutes",
+      "recipient": "Destinataire",
+      "paymentMethod": "Mode de paiement",
+      "termsAgreement": "J'accepte les conditions d'utilisation et confirme ce transfert",
+      "confirmButton": "Confirmer et envoyer"
+    },
+    "step5": {
+      "processingTitle": "Traitement de votre transfert...",
+      "processingSubtitle": "Veuillez patienter pendant le traitement de votre paiement",
+      "successTitle": "Transfert envoyé !",
+      "successSubtitle": "Votre argent est en route",
+      "transactionId": "ID de transaction",
+      "shareReceipt": "Partager le reçu",
+      "sendAnother": "Envoyer un autre",
+      "backHome": "Retour à l'accueil",
+      "failureTitle": "Échec du transfert",
+      "failureSubtitle": "Nous n'avons pas pu traiter votre transfert",
+      "failureReason": "Raison : {{reason}}",
+      "retryButton": "Réessayer"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "empty": "Aucune transaction",
+    "emptySubtitle": "Votre historique de transfert apparaîtra ici",
+    "filter": {
+      "all": "Tout",
+      "pending": "En attente",
+      "processing": "En cours",
+      "completed": "Terminé",
+      "failed": "Échoué"
+    },
+    "status": {
+      "pending": "En attente",
+      "processing": "En cours",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    },
+    "details": {
+      "title": "Détails de la transaction",
+      "transactionId": "ID de transaction",
+      "date": "Date",
+      "youSent": "Vous avez envoyé",
+      "theyReceived": "Ils ont reçu",
+      "exchangeRate": "Taux de change",
+      "fee": "Frais",
+      "recipient": "Destinataire"
+    }
   }
 }

@@ -246,5 +246,99 @@
     "permissionBody": "Enable notifications to get real-time updates on your money transfers.",
     "enableButton": "Enable notifications",
     "skipButton": "Not now"
+  },
+  "send": {
+    "title": "Send money",
+    "step1": {
+      "title": "Select recipient",
+      "subtitle": "Who are you sending money to?",
+      "searchPlaceholder": "Search recipients",
+      "addNew": "Add new recipient",
+      "savedRecipients": "Saved recipients"
+    },
+    "step2": {
+      "title": "Enter amount",
+      "subtitle": "How much are you sending?",
+      "sendLabel": "You send",
+      "receiveLabel": "They receive",
+      "switchDirection": "Switch direction",
+      "rate": "Rate",
+      "fee": "Fee",
+      "total": "Total",
+      "rateLockedFor": "Rate locked for {{time}}",
+      "rateExpired": "Rate expired. Refreshing...",
+      "quoteRefreshing": "Refreshing rate...",
+      "selectCorridor": "Select destination",
+      "minAmount": "Minimum: {{amount}}",
+      "maxAmount": "Maximum: {{amount}}"
+    },
+    "step3": {
+      "title": "Payment method",
+      "subtitle": "How do you want to pay?",
+      "card": "Pay by card",
+      "bankTransfer": "Bank transfer",
+      "savedMethods": "Saved payment methods",
+      "cardNumber": "Card number",
+      "expiryDate": "Expiry date",
+      "cvv": "CVV",
+      "cardholderName": "Cardholder name"
+    },
+    "step4": {
+      "title": "Review & confirm",
+      "subtitle": "Please check the details before confirming",
+      "youSend": "You send",
+      "theyReceive": "They receive",
+      "exchangeRate": "Exchange rate",
+      "fees": "Fees",
+      "estimatedArrival": "Estimated arrival",
+      "arrivalTime": "Within 5 minutes",
+      "recipient": "Recipient",
+      "paymentMethod": "Payment method",
+      "termsAgreement": "I agree to the Terms of Service and confirm this transfer",
+      "confirmButton": "Confirm & send"
+    },
+    "step5": {
+      "processingTitle": "Processing your transfer...",
+      "processingSubtitle": "Please wait while we process your payment",
+      "successTitle": "Transfer sent!",
+      "successSubtitle": "Your money is on its way",
+      "transactionId": "Transaction ID",
+      "shareReceipt": "Share receipt",
+      "sendAnother": "Send another",
+      "backHome": "Back to home",
+      "failureTitle": "Transfer failed",
+      "failureSubtitle": "We couldn't process your transfer",
+      "failureReason": "Reason: {{reason}}",
+      "retryButton": "Try again"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "empty": "No transactions yet",
+    "emptySubtitle": "Your transfer history will appear here",
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "details": {
+      "title": "Transaction details",
+      "transactionId": "Transaction ID",
+      "date": "Date",
+      "youSent": "You sent",
+      "theyReceived": "They received",
+      "exchangeRate": "Exchange rate",
+      "fee": "Fee",
+      "recipient": "Recipient"
+    }
   }
 }
