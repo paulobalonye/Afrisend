@@ -13,6 +13,7 @@ import { DefaultKycService } from './services/kycService';
 import { DefaultRemittanceService } from './services/remittanceService';
 import { DefaultUserService } from './services/userService';
 import { DefaultTransactionService } from './services/transactionService';
+import { DefaultComplianceService } from './services/complianceService';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -23,6 +24,8 @@ const app = createApp({
   remittanceService: new DefaultRemittanceService(),
   userService: new DefaultUserService(),
   transactionService: new DefaultTransactionService(),
+  fxRateService: new (require('./services/fxRateService').DefaultFxRateService)(),
+  complianceService: new DefaultComplianceService(),
 });
 
 app.listen(PORT, () => {
