@@ -1,0 +1,104 @@
+name: Deploy to Azure Dev VM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'apps/api/**'
+      - 'packages/**'
+      - 'docker-compose.yml'
+      - 'docker-compose.azure-dev.yml'
+      - 'Dockerfile.backend'
+      - 'kong/**'
+      - 'monitoring/**'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy even if no code changes'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: deploy-azure-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Azure Dev VM
+    runs-on: ubuntu-latest
+    environment:
+      name: azure-dev
+      url: http://${{ vars.AZURE_DEV_VM_IP }}:8000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_DEV_SSH_PRIVATE_KEY }}" > ~/.ssh/azure_dev
+          chmod 600 ~/.ssh/azure_dev
+          ssh-keyscan -H "${{ vars.AZURE_DEV_VM_IP }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Install rsync
+        run: sudo apt-get install -y rsync
+
+      - name: Write environment file
+        run: |
+          cat > .env.azure-dev << 'EOF'
+          NODE_ENV=development
+          PORT=3000
+          DATABASE_URL=postgres://afrisend:afrisend_dev_password@postgres:5432/afrisend_dev
+          REDIS_URL=redis://redis:6379
+          YC_BASEURL=${{ vars.YC_BASEURL_DEV }}
+          YC_PUBKEY=${{ secrets.YC_PUBKEY_DEV }}
+          YC_SECRET=${{ secrets.YC_SECRET_DEV }}
+          YC_MERCHANTID=${{ vars.YC_MERCHANTID_DEV }}
+          VERIFF_PKEY=${{ secrets.VERIFF_PKEY }}
+          VERIFF_SKEY=${{ secrets.VERIFF_SKEY }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          RESEND_DOMAIN=${{ vars.RESEND_DOMAIN }}
+          FLW_PUBLIC_KEY=${{ secrets.FLW_PUBLIC_KEY }}
+          FLW_SECRET_KEY=${{ secrets.FLW_SECRET_KEY }}
+          FLW_ENCRYPTION_KEY=${{ secrets.FLW_ENCRYPTION_KEY }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_DEV }}
+          STRIPE_PUBLISHABLE_KEY=${{ vars.STRIPE_PUBLISHABLE_KEY_DEV }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_DEV }}
+          GRAFANA_ADMIN_USER=admin
+          GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD_DEV }}
+          EOF
+
+      - name: Deploy to Azure dev VM
+        env:
+          VM_IP: ${{ vars.AZURE_DEV_VM_IP }}
+          VM_USER: azureuser
+          SSH_KEY_PATH: ~/.ssh/azure_dev
+          ENV_FILE: .env.azure-dev
+        run: |
+          chmod +x infra/azure-dev/scripts/deploy.sh
+          ./infra/azure-dev/scripts/deploy.sh
+
+      - name: Post deployment summary
+        if: success()
+        run: |
+          echo "### Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| API (Kong proxy) | http://${{ vars.AZURE_DEV_VM_IP }}:8000 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Grafana | http://${{ vars.AZURE_DEV_VM_IP }}:3001 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Prometheus | http://${{ vars.AZURE_DEV_VM_IP }}:9090 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "### Deployment FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "SSH to VM to investigate: \`ssh azureuser@${{ vars.AZURE_DEV_VM_IP }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View logs: \`ssh azureuser@${{ vars.AZURE_DEV_VM_IP }} 'cd /opt/afrisend && docker compose logs --tail=100'\`" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,19 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars — it contains secrets.
+
+project_name = "afrisend"
+environment  = "dev"
+location     = "eastus"
+
+# Azure VM configuration
+vm_size           = "Standard_B2s"
+vm_admin_username = "azureuser"
+os_disk_size_gb   = 64
+
+# SSH public key for VM access — paste the contents of your ~/.ssh/id_rsa.pub
+ssh_public_key = "ssh-rsa AAAA..."
+
+# Network access — restrict to your team's office/VPN IPs for security
+# Use "0.0.0.0/0" for open access (dev only, never production)
+allowed_ssh_cidrs  = ["YOUR_OFFICE_IP/32", "YOUR_HOME_IP/32"]
+allowed_http_cidrs = ["0.0.0.0/0"]

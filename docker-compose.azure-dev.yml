@@ -1,0 +1,46 @@
+# docker-compose.azure-dev.yml
+# Docker Compose override for Azure dev VM deployment.
+# Used together with docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.azure-dev.yml up -d
+#
+# Changes from the base file:
+#   - NODE_ENV set to development (dev/staging behaviour, not prod)
+#   - Backend built from source (not a prebuilt registry image)
+#   - Kong admin port bound to 127.0.0.1 only (not publicly exposed)
+#   - Alertmanager PagerDuty keys loaded from env (not placeholder)
+#   - Grafana admin credentials loaded from env
+
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://afrisend:afrisend_dev_password@postgres:5432/afrisend_dev
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+
+  kong:
+    ports:
+      # Override: bind admin port to localhost only — do not expose publicly
+      - "127.0.0.1:8001:8001"
+      # Kong proxy remains publicly accessible for QA
+      - "8000:8000"
+    restart: unless-stopped
+
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-afrisend_grafana_dev}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    restart: unless-stopped
+
+  alertmanager:
+    environment:
+      PAGERDUTY_INTEGRATION_KEY_CRITICAL: ${PAGERDUTY_INTEGRATION_KEY_CRITICAL:-disabled}
+      PAGERDUTY_INTEGRATION_KEY_WARNING: ${PAGERDUTY_INTEGRATION_KEY_WARNING:-disabled}
+    restart: unless-stopped
