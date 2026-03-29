@@ -14,6 +14,7 @@ import { DefaultRemittanceService } from './services/remittanceService';
 import { DefaultUserService } from './services/userService';
 import { DefaultTransactionService } from './services/transactionService';
 import { DefaultComplianceService } from './services/complianceService';
+import { DefaultFraudDetectionService } from './services/fraudDetectionService';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -26,6 +27,7 @@ const app = createApp({
   transactionService: new DefaultTransactionService(),
   fxRateService: new (require('./services/fxRateService').DefaultFxRateService)(),
   complianceService: new DefaultComplianceService(),
+  fraudDetectionService: new DefaultFraudDetectionService(),
 });
 
 app.listen(PORT, () => {

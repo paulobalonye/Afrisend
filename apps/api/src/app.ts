@@ -20,6 +20,7 @@ import type { IPayoutRoutingService } from './services/payoutRoutingService';
 import type { IAdminService } from './services/adminService';
 import type { MfaService } from './services/mfaService';
 import type { IComplianceService } from './services/complianceService';
+import type { IFraudDetectionService } from './services/fraudDetectionService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -32,6 +33,7 @@ import { createFxRouter } from './routes/fx';
 import { createPayoutRouter } from './routes/payout';
 import { createAdminRouter } from './routes/admin';
 import { createComplianceRouter } from './routes/compliance';
+import { createFraudDetectionRouter } from './routes/fraudDetection';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
 import { requireAuth, createRequireAuth } from './middleware/requireAuth';
 import { createRequireAdmin } from './middleware/requireAdmin';
@@ -53,6 +55,7 @@ export type AppServices = {
   jwtService: JwtService;
   mfaService?: MfaService;
   complianceService?: IComplianceService;
+  fraudDetectionService?: IFraudDetectionService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -91,6 +94,9 @@ export function createApp(services: AppServices): Application {
   app.use('/v1/payout', createPayoutRouter(services.payoutRoutingService));
   if (services.complianceService) {
     app.use('/v1/compliance', requireAuth, createComplianceRouter(services.complianceService));
+  }
+  if (services.fraudDetectionService) {
+    app.use('/v1/fraud', requireAuth, createFraudDetectionRouter(services.fraudDetectionService));
   }
 
   // ── Admin routes (require admin JWT) ─────────────────────────────────────
