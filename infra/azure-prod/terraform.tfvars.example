@@ -1,0 +1,31 @@
+# ─── AfriSend Azure Production Configuration ─────────────────────────────────
+# Copy to terraform.tfvars and fill in your values
+
+project_name = "afrisend"
+environment  = "prod"
+location     = "eastus"
+
+# Container image — updated by CI/CD pipeline
+container_image = "ghcr.io/paulobalonye/afrisend-api:latest"
+
+# Container sizing (0.5 vCPU / 1Gi fits within ~$50/mo budget)
+container_cpu          = 0.5
+container_memory       = "1Gi"
+container_min_replicas = 1
+container_max_replicas = 3
+
+# PostgreSQL (~$13/mo)
+postgres_sku        = "B_Standard_B1ms"
+postgres_storage_mb = 32768
+postgres_version    = "15"
+
+# Redis (~$16/mo)
+redis_sku      = "Basic"
+redis_capacity = 0
+redis_family   = "C"
+
+# Custom domain (optional — leave empty to use Azure-provided FQDN)
+custom_domain = ""
+
+# YellowCard environment
+yellowcard_base_url = "https://sandbox.api.yellowcard.io"
