@@ -125,6 +125,28 @@ resource "azurerm_container_app" "api" {
         secret_name = "stripe-webhook-secret"
       }
 
+      # ── MFA Encryption ──────────────────────────────────────────────────
+      env {
+        name        = "MFA_ENCRYPTION_KEY"
+        secret_name = "mfa-encryption-key"
+      }
+
+      # ── Smile Identity (KYC) ────────────────────────────────────────────
+      env {
+        name        = "SMILE_IDENTITY_API_KEY"
+        secret_name = "smile-identity-api-key"
+      }
+
+      env {
+        name        = "SMILE_IDENTITY_PARTNER_ID"
+        secret_name = "smile-identity-partner-id"
+      }
+
+      env {
+        name        = "SMILE_IDENTITY_WEBHOOK_SECRET"
+        secret_name = "smile-identity-webhook-secret"
+      }
+
       # ── Health Check ─────────────────────────────────────────────────────
       liveness_probe {
         transport = "HTTP"
@@ -224,6 +246,26 @@ resource "azurerm_container_app" "api" {
 
   secret {
     name  = "stripe-webhook-secret"
+    value = "CHANGE_ME"
+  }
+
+  secret {
+    name  = "mfa-encryption-key"
+    value = "CHANGE_ME"
+  }
+
+  secret {
+    name  = "smile-identity-api-key"
+    value = "CHANGE_ME"
+  }
+
+  secret {
+    name  = "smile-identity-partner-id"
+    value = "CHANGE_ME"
+  }
+
+  secret {
+    name  = "smile-identity-webhook-secret"
     value = "CHANGE_ME"
   }
 

@@ -27,5 +27,5 @@ redis_family   = "C"
 # Custom domain (optional — leave empty to use Azure-provided FQDN)
 custom_domain = ""
 
-# YellowCard environment
-yellowcard_base_url = "https://sandbox.api.yellowcard.io"
+# YellowCard environment (production — use https://sandbox.api.yellowcard.io for staging)
+yellowcard_base_url = "https://api.yellowcard.io"

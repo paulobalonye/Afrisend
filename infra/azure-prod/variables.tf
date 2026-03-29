@@ -100,7 +100,7 @@ variable "custom_domain" {
 # ─── App Environment Variables ────────────────────────────────────────────────
 
 variable "yellowcard_base_url" {
-  description = "YellowCard API base URL"
+  description = "YellowCard API base URL (use https://api.yellowcard.io for production)"
   type        = string
-  default     = "https://sandbox.api.yellowcard.io"
+  default     = "https://api.yellowcard.io"
 }

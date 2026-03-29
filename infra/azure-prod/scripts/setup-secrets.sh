@@ -38,6 +38,10 @@ declare -A SECRETS=(
   ["stripe-secret-key"]="STRIPE_SECRET_KEY"
   ["stripe-publishable-key"]="STRIPE_PUBLISHABLE_KEY"
   ["stripe-webhook-secret"]="STRIPE_WEBHOOK_SECRET"
+  ["mfa-encryption-key"]="MFA_ENCRYPTION_KEY"
+  ["smile-identity-api-key"]="SMILE_IDENTITY_API_KEY"
+  ["smile-identity-partner-id"]="SMILE_IDENTITY_PARTNER_ID"
+  ["smile-identity-webhook-secret"]="SMILE_IDENTITY_WEBHOOK_SECRET"
 )
 
 echo "Updating secrets on $CONTAINER_APP in $RESOURCE_GROUP..."
