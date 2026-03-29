@@ -63,7 +63,7 @@ export function createFraudDetectionRouter(fraudService: IFraudDetectionService)
   // GET /fraud/decisions/:transactionId — get stored fraud decision
   router.get('/decisions/:transactionId', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { transactionId } = req.params;
+      const transactionId = req.params['transactionId'] as string;
       const decision = await fraudService.getDecision(transactionId);
       if (!decision) {
         return notFound(res, `No fraud decision found for transaction: ${transactionId}`);
@@ -77,7 +77,7 @@ export function createFraudDetectionRouter(fraudService: IFraudDetectionService)
   // GET /fraud/devices/:deviceId — get device trust info
   router.get('/devices/:deviceId', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { deviceId } = req.params;
+      const deviceId = req.params['deviceId'] as string;
       const trust = await fraudService.getDeviceTrust(deviceId);
       if (!trust) {
         return notFound(res, `No device trust info found for device: ${deviceId}`);

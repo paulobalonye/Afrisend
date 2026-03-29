@@ -78,7 +78,9 @@
       "src/services/circuitBreaker.ts",
       "src/services/payoutRoutingService.ts",
       "src/services/complianceService.ts",
-      "src/routes/compliance.ts"
+      "src/routes/compliance.ts",
+      "src/services/fraudDetectionService.ts",
+      "src/routes/fraudDetection.ts"
     ],
     "coverageThreshold": {
       "global": {
