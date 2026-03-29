@@ -22,7 +22,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   tags = local.tags
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
