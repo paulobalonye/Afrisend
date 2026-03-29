@@ -136,3 +136,48 @@ teardown() {
   TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
   [ -f "$TERRAFORM_DIR/terraform.tfvars.example" ]
 }
+
+# ─── Security: CIDRs must not default to 0.0.0.0/0 (HIT-96) ──────────────────
+
+@test "variables.tf allowed_ssh_cidrs has no 0.0.0.0/0 default" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # The allowed_ssh_cidrs default line must not contain 0.0.0.0/0
+  # (validation blocks may reference it to reject it — only the default= line matters)
+  ! awk '/variable "allowed_ssh_cidrs"/,/^}/' "$TERRAFORM_DIR/variables.tf" \
+    | grep '^\s*default\s*=' | grep -q '0\.0\.0\.0/0'
+}
+
+@test "variables.tf allowed_http_cidrs has no 0.0.0.0/0 default" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # The allowed_http_cidrs variable must not have a default containing 0.0.0.0/0
+  ! awk '/variable "allowed_http_cidrs"/,/^}/' "$TERRAFORM_DIR/variables.tf" \
+    | grep -q '0\.0\.0\.0/0'
+}
+
+@test "variables.tf allowed_ssh_cidrs has no default at all" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # SSH CIDRs must be explicitly provided — no default value permitted
+  ! awk '/variable "allowed_ssh_cidrs"/,/^}/' "$TERRAFORM_DIR/variables.tf" \
+    | grep -q '^\s*default\s*='
+}
+
+@test "variables.tf has validation block rejecting 0.0.0.0/0 for SSH" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # A validation block must exist inside the allowed_ssh_cidrs variable
+  awk '/variable "allowed_ssh_cidrs"/,/^}/' "$TERRAFORM_DIR/variables.tf" \
+    | grep -q 'validation'
+}
+
+@test "tfvars.example does not use 0.0.0.0/0 for allowed_ssh_cidrs" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # The example file must show real placeholder CIDRs, not open access
+  ! grep 'allowed_ssh_cidrs' "$TERRAFORM_DIR/terraform.tfvars.example" \
+    | grep -q '0\.0\.0\.0/0'
+}
+
+@test "tfvars.example provides placeholder CIDRs for allowed_ssh_cidrs" {
+  TERRAFORM_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # Must show example placeholder IPs, not open 0.0.0.0/0
+  grep 'allowed_ssh_cidrs' "$TERRAFORM_DIR/terraform.tfvars.example" \
+    | grep -q 'YOUR_\|x\.x\.x\.x\|<\|203\.0\.113\|198\.51\.100'
+}

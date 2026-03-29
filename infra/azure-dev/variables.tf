@@ -46,13 +46,16 @@ variable "os_disk_size_gb" {
 # ─── Network ──────────────────────────────────────────────────────────────────
 
 variable "allowed_ssh_cidrs" {
-  description = "CIDR ranges allowed SSH access to the VM (restrict to your team's IPs)"
+  description = "CIDR ranges allowed SSH access to the VM (restrict to your team's IPs — never use 0.0.0.0/0)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = !contains(var.allowed_ssh_cidrs, "0.0.0.0/0")
+    error_message = "allowed_ssh_cidrs must not contain 0.0.0.0/0 — restrict SSH to specific IPs or CIDR ranges."
+  }
 }
 
 variable "allowed_http_cidrs" {
   description = "CIDR ranges allowed HTTP access (Kong proxy port 8000)"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
 }
