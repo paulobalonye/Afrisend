@@ -76,7 +76,9 @@
       "src/middleware/metricsMiddleware.ts",
       "src/middleware/logger.ts",
       "src/services/circuitBreaker.ts",
-      "src/services/payoutRoutingService.ts"
+      "src/services/payoutRoutingService.ts",
+      "src/services/complianceService.ts",
+      "src/routes/compliance.ts"
     ],
     "coverageThreshold": {
       "global": {

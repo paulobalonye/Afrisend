@@ -19,6 +19,7 @@ import type { IFxRateService } from './services/fxRateService';
 import type { IPayoutRoutingService } from './services/payoutRoutingService';
 import type { IAdminService } from './services/adminService';
 import type { MfaService } from './services/mfaService';
+import type { IComplianceService } from './services/complianceService';
 
 import { createAuthRouter } from './routes/auth';
 import { createUsersRouter } from './routes/users';
@@ -30,6 +31,7 @@ import { createTransactionRouter } from './routes/transactions';
 import { createFxRouter } from './routes/fx';
 import { createPayoutRouter } from './routes/payout';
 import { createAdminRouter } from './routes/admin';
+import { createComplianceRouter } from './routes/compliance';
 import { globalErrorHandler, notFound } from './middleware/errorHandler';
 import { requireAuth, createRequireAuth } from './middleware/requireAuth';
 import { createRequireAdmin } from './middleware/requireAdmin';
@@ -50,6 +52,7 @@ export type AppServices = {
   adminService: IAdminService;
   jwtService: JwtService;
   mfaService?: MfaService;
+  complianceService?: IComplianceService;
 };
 
 export function createApp(services: AppServices): Application {
@@ -86,6 +89,9 @@ export function createApp(services: AppServices): Application {
   app.use('/v1/transactions', requireAuth, createTransactionRouter(services.transactionService));
   app.use('/v1/fx', createFxRouter(services.fxRateService));
   app.use('/v1/payout', createPayoutRouter(services.payoutRoutingService));
+  if (services.complianceService) {
+    app.use('/v1/compliance', requireAuth, createComplianceRouter(services.complianceService));
+  }
 
   // ── Admin routes (require admin JWT) ─────────────────────────────────────
   const requireAdmin = createRequireAdmin(services.jwtService);
