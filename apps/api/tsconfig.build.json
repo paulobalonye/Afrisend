@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@afrisend/shared": ["../../packages/shared/src"],
+      "@afrisend/shared/*": ["../../packages/shared/src/*"]
+    },
+    "strict": false,
+    "noImplicitAny": false
+  },
+  "include": ["src", "../../packages/shared/src"]
+}

@@ -21,7 +21,7 @@ variable "location" {
 # ─── Container App ────────────────────────────────────────────────────────────
 
 variable "container_image" {
-  description = "Docker image to deploy (e.g. ghcr.io/paulobalonye/afrisend-api:latest)"
+  description = "Docker image to deploy (e.g. afrisendprod.azurecr.io/afrisend-api:latest)"
   type        = string
 }
 

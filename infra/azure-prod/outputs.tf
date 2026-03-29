@@ -40,14 +40,20 @@ output "redis_ssl_port" {
   value       = azurerm_redis_cache.main.ssl_port
 }
 
+output "acr_login_server" {
+  description = "ACR login server"
+  value       = azurerm_container_registry.main.login_server
+}
+
 output "log_analytics_workspace_id" {
   description = "Log Analytics Workspace ID for monitoring"
   value       = azurerm_log_analytics_workspace.main.id
 }
 
 # ─── Cost Estimate ────────────────────────────────────────────────────────────
-# PostgreSQL Flexible Server B1ms:  ~$13/mo
-# Redis Cache Basic C0:             ~$16/mo
-# Container Apps (0.5 vCPU, 1Gi):   ~$10-15/mo (consumption pricing)
-# Log Analytics (30-day retention):  ~$2-5/mo
-# ─── Total Estimate:               ~$41-49/mo ────────────────────────────────
+# ACR Basic:                         ~$5/mo
+# PostgreSQL Flexible Server B1ms:   ~$13/mo
+# Redis Cache Basic C0:              ~$16/mo
+# Container Apps (0.5 vCPU, 1Gi):    ~$10-15/mo (consumption pricing)
+# Log Analytics (30-day retention):   ~$2-5/mo
+# ─── Total Estimate:                ~$46-54/mo ───────────────────────────────

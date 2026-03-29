@@ -1,6 +1,16 @@
 // Stub API client for apps/api — used only in tests where calls are mocked.
 // The actual HTTP client lives in apps/mobile/src/api/client.ts.
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 export async function post<T>(_path: string, _data?: unknown): Promise<T> {
   throw new Error('API client should be mocked in tests');
 }

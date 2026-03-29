@@ -17,6 +17,12 @@ resource "azurerm_container_app" "api" {
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
 
+  registry {
+    server               = azurerm_container_registry.main.login_server
+    username             = azurerm_container_registry.main.admin_username
+    password_secret_name = "acr-password"
+  }
+
   template {
     min_replicas = var.container_min_replicas
     max_replicas = var.container_max_replicas
@@ -178,6 +184,11 @@ resource "azurerm_container_app" "api" {
   }
 
   # ── Secrets (values set via Azure CLI or CI/CD, not in Terraform state) ────
+  secret {
+    name  = "acr-password"
+    value = azurerm_container_registry.main.admin_password
+  }
+
   secret {
     name  = "database-url"
     value = "postgresql://${azurerm_postgresql_flexible_server.main.administrator_login}:${random_password.postgres.result}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${azurerm_postgresql_flexible_server_database.app.name}?sslmode=require"
