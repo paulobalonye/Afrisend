@@ -20,7 +20,7 @@ Internet → Azure Container Apps (API) → PostgreSQL Flexible Server
 
 1. Azure CLI installed and authenticated (`az login`)
 2. Terraform >= 1.5 installed
-3. GitHub repository with `AZURE_CREDENTIALS` secret configured
+3. GitHub repository with 4 Azure secrets configured: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SUBSCRIPTION_ID`
 
 ### Create Azure Service Principal
 
@@ -29,10 +29,14 @@ az ad sp create-for-rbac \
   --name "afrisend-deploy" \
   --role contributor \
   --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-afrisend-prod \
-  --sdk-auth
+  --output json
 ```
 
-Save the JSON output as `AZURE_CREDENTIALS` in GitHub repo secrets.
+From the JSON output, save these values as individual GitHub repo secrets:
+- `AZURE_CLIENT_ID` → value of `appId`
+- `AZURE_TENANT_ID` → value of `tenant`
+- `AZURE_CLIENT_SECRET` → value of `password`
+- `AZURE_SUBSCRIPTION_ID` → your Azure subscription ID
 
 ## Initial Deployment
 
@@ -103,7 +107,10 @@ The `.github/workflows/deploy-azure-prod.yml` workflow:
 
 | Secret | Description |
 |--------|-------------|
-| `AZURE_CREDENTIALS` | Service principal JSON from `az ad sp create-for-rbac` |
+| `AZURE_CLIENT_ID` | Service principal `appId` from `az ad sp create-for-rbac` |
+| `AZURE_TENANT_ID` | Azure AD `tenant` from `az ad sp create-for-rbac` |
+| `AZURE_CLIENT_SECRET` | Service principal `password` from `az ad sp create-for-rbac` |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
 
 ### Manual Deployment
 

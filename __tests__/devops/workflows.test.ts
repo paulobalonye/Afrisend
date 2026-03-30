@@ -220,24 +220,27 @@ describe('.github/workflows/deploy-azure-prod.yml', () => {
     expect(coversApi || coversDockerfile).toBe(true);
   });
 
-  it('uses azure/login@v2 with auth-type: CREDENTIALS_OBJECT', () => {
+  it('uses azure/login@v2 with separate service principal secrets', () => {
     const steps = flattenSteps(workflow);
     const azureLoginStep = steps.find(s =>
       String(s.uses || '').startsWith('azure/login')
     );
     expect(azureLoginStep).toBeDefined();
-    // Must use CREDENTIALS_OBJECT auth-type so a full JSON secret blob is accepted
+    // Must use separate secrets for SERVICE_PRINCIPAL auth (azure/login@v2 standard approach)
     const withBlock = (azureLoginStep as Record<string, unknown>)?.with as Record<string, unknown> | undefined;
-    expect(withBlock?.['auth-type']).toBe('CREDENTIALS_OBJECT');
+    expect(String(withBlock?.['client-id'] || '')).toContain('AZURE_CLIENT_ID');
+    expect(String(withBlock?.['tenant-id'] || '')).toContain('AZURE_TENANT_ID');
+    expect(String(withBlock?.['client-secret'] || '')).toContain('AZURE_CLIENT_SECRET');
+    expect(String(withBlock?.['subscription-id'] || '')).toContain('AZURE_SUBSCRIPTION_ID');
   });
 
-  it('references AZURE_CREDENTIALS secret for azure/login', () => {
+  it('does not use deprecated AZURE_CREDENTIALS single-blob secret for azure/login', () => {
     const steps = flattenSteps(workflow);
     const azureLoginStep = steps.find(s =>
       String(s.uses || '').startsWith('azure/login')
     );
     const withBlock = (azureLoginStep as Record<string, unknown>)?.with as Record<string, unknown> | undefined;
-    expect(String(withBlock?.creds || '')).toContain('AZURE_CREDENTIALS');
+    expect(withBlock?.creds).toBeUndefined();
   });
 
   it('has a deploy job', () => {
