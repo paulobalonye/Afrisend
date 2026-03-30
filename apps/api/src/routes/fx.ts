@@ -78,7 +78,7 @@ export function createFxRouter(fxService: IFxRateService): Router {
   // POST /fx/quote/:id/lock — validate and atomically lock a quote
   router.post('/quote/:id/lock', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       let quote;
       try {

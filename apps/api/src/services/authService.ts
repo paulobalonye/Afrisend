@@ -13,7 +13,9 @@ import { randomBytes } from 'crypto';
 import type { User } from '@afrisend/shared';
 import { JwtService } from './jwtService';
 import type { ILoginRateLimiter } from './loginRateLimiter';
+import { LoginRateLimiter } from './loginRateLimiter';
 import type { IRefreshTokenStore } from './refreshTokenStore';
+import { InMemoryRefreshTokenStore } from './refreshTokenStore';
 import type { MfaService } from './mfaService';
 
 export type AuthTokens = {
@@ -97,9 +99,9 @@ export class HardenedAuthService implements IAuthService {
   private readonly cleanupTimer: ReturnType<typeof setInterval>;
 
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly rateLimiter: ILoginRateLimiter,
-    private readonly tokenStore: IRefreshTokenStore,
+    private readonly jwtService: JwtService = new JwtService(),
+    private readonly rateLimiter: ILoginRateLimiter = new LoginRateLimiter(),
+    private readonly tokenStore: IRefreshTokenStore = new InMemoryRefreshTokenStore(),
     private readonly mfaService?: MfaService
   ) {
     // Periodically sweep expired MFA challenges to prevent memory leaks

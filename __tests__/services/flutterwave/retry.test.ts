@@ -30,7 +30,7 @@ describe('withRetry', () => {
 
   it('respects maxAttempts configuration', async () => {
     const operation = jest.fn().mockRejectedValue(new Error('fail'));
-    const config: RetryConfig = { maxAttempts: 5, baseDelayMs: 1 };
+    const config: RetryConfig = { maxAttempts: 5, baseDelayMs: 1, maxDelayMs: 10_000 };
 
     await expect(withRetry(operation, config)).rejects.toThrow();
     expect(operation).toHaveBeenCalledTimes(5);
@@ -54,11 +54,11 @@ describe('withRetry', () => {
 
     jest
       .spyOn(global, 'setTimeout')
-      .mockImplementation((fn: TimerHandler, delay?: number, ...args: unknown[]) => {
+      .mockImplementation(((fn: (...a: unknown[]) => void, delay?: number, ...args: unknown[]) => {
         if (delay !== undefined && delay > 0) delays.push(delay);
         // Call with 0ms so tests run fast
         return originalSetTimeout(fn as () => void, 0, ...args);
-      });
+      }) as typeof globalThis.setTimeout);
 
     const operation = jest
       .fn()

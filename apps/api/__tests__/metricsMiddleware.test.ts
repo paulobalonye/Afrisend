@@ -10,7 +10,7 @@ import {
   createMetricsMiddleware,
   createMetricsRouter,
   AfriSendMetrics,
-} from '@/middleware/metricsMiddleware';
+} from '@/server/middleware/metricsMiddleware';
 
 describe('createMetricsMiddleware (api)', () => {
   it('returns an express middleware', () => {

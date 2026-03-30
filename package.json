@@ -74,6 +74,7 @@
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/react-native": "^12.8.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/pino": "^7.0.4",
     "@types/pino-http": "^5.8.4",
     "@types/react": "~18.3.12",

@@ -12,6 +12,10 @@ import type { IAuthService } from '@/server/services/authService';
 import type { IKycService } from '@/server/services/kycService';
 import type { IRemittanceService } from '@/server/services/remittanceService';
 import type { IUserService } from '@/server/services/userService';
+import type { ITransactionService } from '@/server/services/transactionService';
+import type { IPayoutRoutingService } from '@/server/services/payoutRoutingService';
+import type { IAdminService } from '@/server/services/adminService';
+import type { JwtService } from '@/server/services/jwtService';
 
 // ─── Mock services ────────────────────────────────────────────────────────────
 
@@ -25,6 +29,8 @@ const mockOtpService: IOtpService = {
 
 const mockAuthService: IAuthService = {
   register: jest.fn(),
+  login: jest.fn(),
+  completeMfaLogin: jest.fn(),
   refreshToken: jest.fn(),
   logout: jest.fn(),
   setupProfile: jest.fn(),
@@ -91,6 +97,34 @@ const mockUserService: IUserService = {
   updateTierFromKyc: jest.fn().mockResolvedValue({ ...MOCK_PROFILE, kycTier: 1, monthlyLimit: 500 }),
 };
 
+const mockTransactionService: ITransactionService = {
+  initiate: jest.fn().mockResolvedValue({}),
+  get: jest.fn().mockResolvedValue({}),
+  getById: jest.fn().mockResolvedValue({}),
+  list: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  cancel: jest.fn().mockResolvedValue({}),
+  transitionTo: jest.fn().mockResolvedValue({}),
+  getEvents: jest.fn().mockResolvedValue([]),
+  retry: jest.fn().mockResolvedValue({}),
+};
+
+const mockPayoutRoutingService: IPayoutRoutingService = {
+  route: jest.fn().mockResolvedValue({}),
+  handleStatusUpdate: jest.fn().mockResolvedValue(undefined),
+};
+
+const mockAdminService: IAdminService = {
+  listTransactions: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  getTransaction: jest.fn().mockResolvedValue({}),
+  overrideTransactionStatus: jest.fn().mockResolvedValue({}),
+  listUsers: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  updateUser: jest.fn().mockResolvedValue({}),
+  listFxCorridors: jest.fn().mockResolvedValue([]),
+  updateCorridorMarkup: jest.fn().mockResolvedValue({}),
+  listFlaggedTransactions: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  getCorridorMetrics: jest.fn().mockResolvedValue([]),
+};
+
 // ─── App setup ────────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,6 +137,11 @@ beforeAll(() => {
     kycService: mockKycService,
     remittanceService: mockRemittanceService,
     userService: mockUserService,
+    transactionService: mockTransactionService,
+    fxRateService: { getCurrentRates: jest.fn().mockResolvedValue([]), createQuote: jest.fn().mockResolvedValue({}), validateAndLockQuote: jest.fn().mockResolvedValue({}) },
+    payoutRoutingService: mockPayoutRoutingService,
+    adminService: mockAdminService,
+    jwtService: { signAccessToken: jest.fn().mockResolvedValue('token'), verifyAccessToken: jest.fn().mockResolvedValue({ userId: 'usr-1', email: 'a@b.com' }), getPublicKey: jest.fn().mockReturnValue('pk'), generateKeyPair: jest.fn().mockResolvedValue({}) } as unknown as JwtService,
   });
 });
 

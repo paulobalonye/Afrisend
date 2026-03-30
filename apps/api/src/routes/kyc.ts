@@ -31,7 +31,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // POST /kyc/sessions/:sessionId/documents
   router.post('/sessions/:sessionId/documents', upload.single('document'), async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       const { documentType, side } = req.body as Record<string, unknown>;
 
       if (!req.file) return badRequest(res, 'document file is required');
@@ -53,7 +53,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // POST /kyc/sessions/:sessionId/selfie
   router.post('/sessions/:sessionId/selfie', upload.single('selfie'), async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       if (!req.file) return badRequest(res, 'selfie file is required');
 
       const result = await kycService.uploadSelfie(sessionId, req.file.buffer);
@@ -66,7 +66,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // POST /kyc/sessions/:sessionId/address
   router.post('/sessions/:sessionId/address', upload.single('document'), async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       if (!req.file) return badRequest(res, 'document file is required');
 
       const result = await kycService.uploadAddressProof(sessionId, req.file.buffer, req.file.mimetype);
@@ -79,7 +79,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // POST /kyc/sessions/:sessionId/liveness-token
   router.post('/sessions/:sessionId/liveness-token', async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       const result = await kycService.getLivenessToken(sessionId);
       return ok(res, result);
     } catch (err) {
@@ -90,7 +90,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // POST /kyc/sessions/:sessionId/submit
   router.post('/sessions/:sessionId/submit', async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       const result = await kycService.submitSession(sessionId);
       return ok(res, result);
     } catch (err) {
@@ -119,7 +119,7 @@ export function createKycRouter(kycService: IKycService): Router {
   // GET /kyc/veriff/sessions/:sessionId/decision
   router.get('/veriff/sessions/:sessionId/decision', async (req, res, next) => {
     try {
-      const { sessionId } = req.params;
+      const { sessionId } = req.params as { sessionId: string };
       const result = await kycService.getVeriffDecision(sessionId);
       return ok(res, result);
     } catch (err) {

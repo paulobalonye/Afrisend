@@ -132,12 +132,12 @@ describe('DefaultAuthService', () => {
 
   describe('refreshToken', () => {
     it('returns new accessToken for valid token', async () => {
-      const result = await service.refreshToken('valid-refresh-token');
+      const result = await service.refreshToken('valid-refresh-token', 'test-device');
       expect(result.accessToken).toBeTruthy();
     });
 
     it('throws for empty refresh token', async () => {
-      await expect(service.refreshToken('')).rejects.toThrow('Invalid refresh token');
+      await expect(service.refreshToken('', 'test-device')).rejects.toThrow('Invalid refresh token');
     });
   });
 

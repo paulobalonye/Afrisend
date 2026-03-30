@@ -123,7 +123,7 @@ export function createUsersRouter(authService: IAuthService, userService: IUserS
   // PATCH /v1/users/me/recipients/:id
   router.patch('/me/recipients/:id', requireAuth, async (req, res, next) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const { name, country, payoutMethod, accountDetails } = req.body as Record<string, unknown>;
 
       const input: Parameters<IUserService['updateRecipient']>[2] = {};
@@ -158,7 +158,7 @@ export function createUsersRouter(authService: IAuthService, userService: IUserS
   // DELETE /v1/users/me/recipients/:id
   router.delete('/me/recipients/:id', requireAuth, async (req, res, next) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       await userService.deleteRecipient(req.userId!, id);
       return ok(res, { deleted: true });
     } catch (err) {

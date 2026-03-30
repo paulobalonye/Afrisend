@@ -10,6 +10,7 @@ const mockCorridor: Corridor = {
   minAmount: 10,
   maxAmount: 5000,
   isActive: true,
+  refreshIntervalSeconds: 60,
 };
 
 const mockQuote: RateQuote = {

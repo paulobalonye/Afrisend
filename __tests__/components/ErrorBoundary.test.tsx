@@ -67,7 +67,10 @@ describe('ErrorBoundary', () => {
 
   it('renders custom fallback when provided', () => {
     const { getByText } = render(
-      <ErrorBoundary fallback={<>{/* @ts-ignore */}<nativetext testID="custom-fallback">Custom Error</nativetext></>}>
+      <ErrorBoundary fallback={<>
+          {/* @ts-ignore */}
+          <nativeText>Custom Error</nativeText>
+        </>}>
         <BrokenComponent shouldThrow={true} />
       </ErrorBoundary>,
     );

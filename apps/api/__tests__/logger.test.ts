@@ -5,7 +5,7 @@
 
 import request from 'supertest';
 import express from 'express';
-import { createLogger, createLoggerMiddleware } from '@/middleware/logger';
+import { createLogger, createLoggerMiddleware } from '@/server/middleware/logger';
 
 describe('createLogger (api)', () => {
   it('returns a pino logger with standard log methods', () => {

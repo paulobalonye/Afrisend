@@ -6,6 +6,7 @@
  */
 
 import request from 'supertest';
+import type { Application } from 'express';
 import { createApp } from '@/server/app';
 import type { IOtpService } from '@/server/services/otpService';
 import type { IKycService } from '@/server/services/kycService';
@@ -13,6 +14,10 @@ import type { IRemittanceService } from '@/server/services/remittanceService';
 import type { IAuthService } from '@/server/services/authService';
 import type { IUserService } from '@/server/services/userService';
 import type { IFxRateService } from '@/server/services/fxRateService';
+import type { ITransactionService } from '@/server/services/transactionService';
+import type { IPayoutRoutingService } from '@/server/services/payoutRoutingService';
+import type { IAdminService } from '@/server/services/adminService';
+import type { JwtService } from '@/server/services/jwtService';
 
 // ─── Mock service implementations ────────────────────────────────────────────
 
@@ -29,7 +34,9 @@ const mockAuthService: IAuthService = {
     user: { id: 'usr-1', phone: '+2348012345678', email: 'a@b.com', firstName: 'Ada', lastName: 'Obi', kycTier: 0, kycStatus: 'none', createdAt: '2026-01-01T00:00:00Z' },
     tokens: { accessToken: 'acc-tok', refreshToken: 'ref-tok', expiresAt: '2026-04-01T00:00:00Z' },
   }),
-  refreshToken: jest.fn().mockResolvedValue({ accessToken: 'new-acc-tok' }),
+  login: jest.fn().mockResolvedValue({ accessToken: 'acc-tok', refreshToken: 'ref-tok', expiresAt: '2026-04-01T00:00:00Z' }),
+  completeMfaLogin: jest.fn().mockResolvedValue({ accessToken: 'acc-tok', refreshToken: 'ref-tok', expiresAt: '2026-04-01T00:00:00Z' }),
+  refreshToken: jest.fn().mockResolvedValue({ accessToken: 'new-acc-tok', refreshToken: 'ref-tok' }),
   logout: jest.fn().mockResolvedValue(undefined),
   setupProfile: jest.fn().mockResolvedValue({ id: 'usr-1', phone: '+2348012345678', email: 'a@b.com', firstName: 'Ada', lastName: 'Obi', kycTier: 0, kycStatus: 'none', createdAt: '2026-01-01T00:00:00Z' }),
 };
@@ -74,9 +81,37 @@ const mockFxRateService: IFxRateService = {
   validateAndLockQuote: jest.fn().mockResolvedValue({}),
 };
 
+const mockTransactionService: ITransactionService = {
+  initiate: jest.fn().mockResolvedValue({}),
+  get: jest.fn().mockResolvedValue({}),
+  getById: jest.fn().mockResolvedValue({}),
+  list: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  cancel: jest.fn().mockResolvedValue({}),
+  transitionTo: jest.fn().mockResolvedValue({}),
+  getEvents: jest.fn().mockResolvedValue([]),
+  retry: jest.fn().mockResolvedValue({}),
+};
+
+const mockPayoutRoutingService: IPayoutRoutingService = {
+  route: jest.fn().mockResolvedValue({}),
+  handleStatusUpdate: jest.fn().mockResolvedValue(undefined),
+};
+
+const mockAdminService: IAdminService = {
+  listTransactions: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  getTransaction: jest.fn().mockResolvedValue({}),
+  overrideTransactionStatus: jest.fn().mockResolvedValue({}),
+  listUsers: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  updateUser: jest.fn().mockResolvedValue({}),
+  listFxCorridors: jest.fn().mockResolvedValue([]),
+  updateCorridorMarkup: jest.fn().mockResolvedValue({}),
+  listFlaggedTransactions: jest.fn().mockResolvedValue({ data: [], total: 0, page: 1, limit: 10 }),
+  getCorridorMetrics: jest.fn().mockResolvedValue([]),
+};
+
 // ─── App setup ───────────────────────────────────────────────────────────────
 
-let app: Express.Application;
+let app: Application;
 
 beforeAll(() => {
   app = createApp({
@@ -86,6 +121,10 @@ beforeAll(() => {
     remittanceService: mockRemittanceService,
     userService: mockUserService,
     fxRateService: mockFxRateService,
+    transactionService: mockTransactionService,
+    payoutRoutingService: mockPayoutRoutingService,
+    adminService: mockAdminService,
+    jwtService: { signAccessToken: jest.fn().mockResolvedValue('token'), verifyAccessToken: jest.fn().mockResolvedValue({ userId: 'usr-1', email: 'a@b.com' }), getPublicKey: jest.fn().mockReturnValue('pk'), generateKeyPair: jest.fn().mockResolvedValue({}) } as unknown as JwtService,
   });
 });
 

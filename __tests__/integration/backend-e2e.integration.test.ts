@@ -34,6 +34,7 @@ const MINIMAL_PNG = Buffer.from(
 );
 
 function buildApp(): Application {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createApp({
     otpService: new DefaultOtpService(),
     authService: new DefaultAuthService(),
@@ -41,7 +42,7 @@ function buildApp(): Application {
     remittanceService: new DefaultRemittanceService(),
     userService: new DefaultUserService(),
     transactionService: new DefaultTransactionService(),
-  });
+  } as any);
 }
 
 // ─── Journey 1: Sign Up → KYC → Send Money ───────────────────────────────────

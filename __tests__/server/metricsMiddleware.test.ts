@@ -63,7 +63,7 @@ describe('createMetricsMiddleware', () => {
     const histogram = metrics.find(m => m.name === 'http_request_duration_seconds');
     expect(histogram).toBeDefined();
     // At least one observation was recorded
-    const sum = (histogram as { values: { metricName: string; value: number }[] }).values.find(
+    const sum = (histogram as unknown as { values: { metricName: string; value: number }[] }).values.find(
       v => v.metricName === 'http_request_duration_seconds_sum',
     );
     expect(sum).toBeDefined();
@@ -175,7 +175,7 @@ describe('AfriSendMetrics', () => {
     const all = await registry.getMetricsAsJSON();
     const hist = all.find(m => m.name === 'payout_provider_latency_seconds');
     expect(hist).toBeDefined();
-    const count = (hist as { values: { labels: Record<string, string>; metricName: string; value: number }[] })
+    const count = (hist as unknown as { values: { labels: Record<string, string>; metricName: string; value: number }[] })
       .values.find(v => v.metricName === 'payout_provider_latency_seconds_count' && v.labels.provider === 'flutterwave');
     expect(count?.value).toBe(2);
   });

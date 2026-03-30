@@ -84,7 +84,7 @@ export function createTransactionRouter(transactionService: ITransactionService)
       const userId = req.userId;
       if (!userId) return badRequest(res, 'Unauthorized');
 
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       try {
         const tx = await transactionService.get(id, userId);
@@ -132,7 +132,7 @@ export function createTransactionRouter(transactionService: ITransactionService)
       const userId = req.userId;
       if (!userId) return badRequest(res, 'Unauthorized');
 
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       try {
         const tx = await transactionService.cancel(id, userId);

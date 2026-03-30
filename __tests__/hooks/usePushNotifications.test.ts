@@ -29,7 +29,7 @@ const mockRequestPermissionsAsync = Notifications.requestPermissionsAsync as jes
 const mockGetExpoPushTokenAsync = Notifications.getExpoPushTokenAsync as jest.Mock;
 const mockSetNotificationHandler = Notifications.setNotificationHandler as jest.Mock;
 const mockSaveAsync = SecureStore.setItemAsync as jest.Mock;
-const mockPost = (ApiClient as { post: jest.Mock }).post;
+const mockPost = (ApiClient as unknown as { post: jest.Mock }).post;
 
 const FCM_TOKEN_KEY = 'afrisend_fcm_token';
 

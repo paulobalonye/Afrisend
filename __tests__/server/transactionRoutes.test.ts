@@ -38,6 +38,7 @@ function buildMockService(overrides: Partial<ITransactionService> = {}): ITransa
   return {
     initiate: jest.fn().mockResolvedValue(mockTx),
     get: jest.fn().mockResolvedValue(mockTx),
+    getById: jest.fn().mockResolvedValue(mockTx),
     list: jest.fn().mockResolvedValue({ data: [mockTx], total: 1, page: 1, limit: 10 }),
     cancel: jest.fn().mockResolvedValue({ ...mockTx, status: TransactionStatus.Cancelled }),
     transitionTo: jest.fn().mockResolvedValue(mockTx),

@@ -19,6 +19,7 @@ import { DefaultUserService } from '@/server/services/userService';
 import { DefaultTransactionService } from '@/server/services/transactionService';
 
 function buildApp() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createApp({
     otpService: new DefaultOtpService(),
     authService: new DefaultAuthService(),
@@ -26,7 +27,7 @@ function buildApp() {
     remittanceService: new DefaultRemittanceService(),
     userService: new DefaultUserService(),
     transactionService: new DefaultTransactionService(),
-  });
+  } as any);
 }
 
 const VALID_RECIPIENT = {
