@@ -194,6 +194,68 @@ describe('.github/workflows/deploy-staging.yml', () => {
   });
 });
 
+describe('.github/workflows/deploy-azure-prod.yml', () => {
+  const AZURE_PROD_WORKFLOW = path.join(WORKFLOWS_DIR, 'deploy-azure-prod.yml');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let workflow: any;
+
+  beforeAll(() => {
+    workflow = loadWorkflow(AZURE_PROD_WORKFLOW);
+  });
+
+  it('exists', () => {
+    expect(fs.existsSync(AZURE_PROD_WORKFLOW)).toBe(true);
+  });
+
+  it('is valid YAML', () => {
+    expect(() => loadWorkflow(AZURE_PROD_WORKFLOW)).not.toThrow();
+  });
+
+  it('triggers on push to main for apps/api or Dockerfile.backend changes', () => {
+    const on = workflow.on || workflow['on'];
+    expect(on?.push?.branches).toContain('main');
+    const paths: string[] = on?.push?.paths || [];
+    const coversApi = paths.some((p: string) => p.includes('apps/api'));
+    const coversDockerfile = paths.some((p: string) => p.includes('Dockerfile.backend'));
+    expect(coversApi || coversDockerfile).toBe(true);
+  });
+
+  it('uses azure/login@v2 with auth-type: CREDENTIALS_OBJECT', () => {
+    const steps = flattenSteps(workflow);
+    const azureLoginStep = steps.find(s =>
+      String(s.uses || '').startsWith('azure/login')
+    );
+    expect(azureLoginStep).toBeDefined();
+    // Must use CREDENTIALS_OBJECT auth-type so a full JSON secret blob is accepted
+    const withBlock = (azureLoginStep as Record<string, unknown>)?.with as Record<string, unknown> | undefined;
+    expect(withBlock?.['auth-type']).toBe('CREDENTIALS_OBJECT');
+  });
+
+  it('references AZURE_CREDENTIALS secret for azure/login', () => {
+    const steps = flattenSteps(workflow);
+    const azureLoginStep = steps.find(s =>
+      String(s.uses || '').startsWith('azure/login')
+    );
+    const withBlock = (azureLoginStep as Record<string, unknown>)?.with as Record<string, unknown> | undefined;
+    expect(String(withBlock?.creds || '')).toContain('AZURE_CREDENTIALS');
+  });
+
+  it('has a deploy job', () => {
+    const jobs = getJobNames(workflow);
+    const hasDeployJob = jobs.some(j => j.toLowerCase().includes('deploy'));
+    expect(hasDeployJob).toBe(true);
+  });
+
+  it('has a health check step', () => {
+    const steps = flattenSteps(workflow);
+    const hasHealthCheck = steps.some(s =>
+      String(s.name || '').toLowerCase().includes('health') ||
+      String(s.run || '').toLowerCase().includes('/health')
+    );
+    expect(hasHealthCheck).toBe(true);
+  });
+});
+
 describe('Coverage threshold configuration', () => {
   it('package.json defines jest coverage thresholds at 80%', () => {
     const pkgPath = path.resolve(__dirname, '../../package.json');
