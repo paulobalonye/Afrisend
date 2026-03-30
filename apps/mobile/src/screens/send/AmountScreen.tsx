@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp, RouteProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import { Screen } from '@/components/ui/Screen';
 import { Typography } from '@/components/ui/Typography';
 import { Button } from '@/components/ui/Button';

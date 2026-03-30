@@ -40,13 +40,7 @@ function createApiClient(): AxiosInstance {
   client.interceptors.request.use(async (config) => {
     const token = await getAccessToken();
     if (token) {
-      return {
-        ...config,
-        headers: {
-          ...config.headers,
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });

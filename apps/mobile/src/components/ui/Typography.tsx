@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Text, TextStyle, StyleSheet } from 'react-native';
+import { Text, TextStyle, StyleSheet, StyleProp } from 'react-native';
 import { useTheme } from '@/theme';
 
 type TypographyVariant =
@@ -17,7 +17,7 @@ type TypographyVariant =
 type TypographyProps = {
   variant?: TypographyVariant;
   children: ReactNode;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
   color?: string;
   center?: boolean;
   numberOfLines?: number;

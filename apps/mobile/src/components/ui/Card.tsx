@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ViewStyle,
+  StyleProp,
 } from 'react-native';
 import { useTheme } from '@/theme';
 
@@ -13,8 +14,8 @@ type CardProps = {
   children: ReactNode;
   variant?: CardVariant;
   onPress?: () => void;
-  style?: ViewStyle;
-  contentStyle?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityLabel?: string;
 };

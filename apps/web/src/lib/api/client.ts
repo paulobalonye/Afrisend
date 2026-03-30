@@ -37,10 +37,7 @@ export function createApiClient(baseURL: string = DEFAULT_BASE_URL): AxiosInstan
   client.interceptors.request.use((config) => {
     const token = getAccessToken();
     if (token) {
-      return {
-        ...config,
-        headers: { ...config.headers, Authorization: `Bearer ${token}` },
-      };
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });

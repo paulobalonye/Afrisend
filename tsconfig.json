@@ -19,5 +19,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["apps", "packages", "jest.setup.ts", "__tests__"]
+  "include": ["apps/api", "apps/mobile", "packages", "jest.setup.ts", "__tests__", "src"],
+  "exclude": ["apps/web"]
 }

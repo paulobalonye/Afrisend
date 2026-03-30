@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
+import type { User } from '@/types';
 
 type Tab = 'profile' | 'kyc' | 'security' | 'notifications';
 
@@ -55,7 +56,7 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileTab({ user }: { user: ReturnType<typeof useAuthStore>['user'] }) {
+function ProfileTab({ user }: { user: User | null }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">

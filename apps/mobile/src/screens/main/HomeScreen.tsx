@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '@/components/ui/Screen';
 import { Typography } from '@/components/ui/Typography';
@@ -9,8 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/theme';
 import { useAuthStore } from '@/store/authStore';
 import type { MainStackParamList } from '@/navigation/MainNavigator';
+import type { RootStackParamList } from '@/navigation';
 
-type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
+type NavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<MainStackParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export function HomeScreen() {
   const { t } = useTranslation();
