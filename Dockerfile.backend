@@ -3,19 +3,32 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install all dependencies (including devDependencies for TypeScript compilation)
+# Copy all workspace package.json files for dependency resolution
 COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/mobile/package.json ./apps/mobile/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+
+# Install all dependencies (including devDependencies for build)
 RUN npm ci --legacy-peer-deps
 
-# Copy TypeScript config and source files
-COPY tsconfig.json ./
-COPY src/server ./src/server
-COPY src/services ./src/services
-COPY src/api ./src/api
-COPY src/utils ./src/utils
+# Copy monorepo configs and source files
+COPY tsconfig.base.json ./
+COPY packages/shared ./packages/shared
+COPY apps/api/tsconfig.json ./apps/api/tsconfig.json
+COPY apps/api/src ./apps/api/src
 
-# Compile TypeScript to JavaScript
-RUN npx tsc --project tsconfig.json --outDir dist --skipLibCheck
+# Bundle with esbuild (transpile-only, no type-checking — CI handles that)
+RUN npx esbuild apps/api/src/index.ts \
+  --bundle \
+  --platform=node \
+  --target=node20 \
+  --outdir=apps/api/dist \
+  --format=cjs \
+  --external:pg-native \
+  --external:@opentelemetry/* \
+  --sourcemap
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
 FROM node:20-alpine AS production
@@ -26,12 +39,17 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-# Install only production dependencies
+# Copy workspace package.json files for production install
 COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/mobile/package.json ./apps/mobile/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+
 RUN npm ci --legacy-peer-deps --omit=dev
 
-# Copy compiled output from builder stage
-COPY --from=builder /app/dist ./dist
+# Copy bundled output from builder stage
+COPY --from=builder /app/apps/api/dist ./dist
 
 # Set file ownership to non-root user
 RUN chown -R nodeuser:nodejs /app
@@ -43,4 +61,4 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 
-CMD ["node", "dist/server/index.js"]
+CMD ["node", "dist/index.js"]

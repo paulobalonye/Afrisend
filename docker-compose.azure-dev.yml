@@ -25,11 +25,18 @@ services:
     restart: unless-stopped
 
   kong:
-    ports:
-      # Override: bind admin port to localhost only — do not expose publicly
-      - "127.0.0.1:8001:8001"
-      # Kong proxy remains publicly accessible for QA
-      - "8000:8000"
+    environment:
+      # Use Docker's embedded DNS server to fix Lua-level DNS resolution on Azure VMs
+      KONG_DNS_RESOLVER: "127.0.0.11"
+    # Small startup delay to ensure Docker network interface is fully up before
+    # Kong's init_by_lua fires its first DNS lookup (Azure VM race condition fix)
+    command: >
+      sh -c "sleep 5 && /docker-entrypoint.sh kong docker-start"
+    # NOTE: port 8001 (Kong admin) is intentionally NOT listed here.
+    # Docker Compose merges port arrays from base + override — listing 127.0.0.1:8001
+    # alongside the base 0.0.0.0:8001 causes a double-bind error.
+    # The Azure NSG already blocks port 8001 from the internet (DenyAllInbound at priority 4096),
+    # so the base 8001:8001 binding is safe without an additional override.
     restart: unless-stopped
 
   grafana:

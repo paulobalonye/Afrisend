@@ -61,7 +61,12 @@ rsync -avz --delete \
   --include='package-lock.json' \
   --include='kong/***' \
   --include='monitoring/***' \
+  --include='apps/' \
   --include='apps/api/***' \
+  --include='apps/mobile/' \
+  --include='apps/mobile/package.json' \
+  --include='apps/web/' \
+  --include='apps/web/package.json' \
   --include='packages/***' \
   --exclude='*' \
   ./ "$VM_USER@$VM_IP:$APP_DIR/"

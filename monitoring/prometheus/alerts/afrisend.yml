@@ -79,7 +79,7 @@ groups:
         annotations:
           summary: "Database connection pool usage exceeds 80%"
           description: >
-            Connection pool is {{ printf "%.0f" ($value * 100) }}% utilised.
+            Connection pool is {{ $value | humanizePercentage }} utilised.
             Risk of connection exhaustion and request timeouts.
           runbook_url: https://runbooks.afrisend.com/db-pool-saturation
 
