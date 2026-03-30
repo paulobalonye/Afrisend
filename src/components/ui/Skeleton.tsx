@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, View, StyleSheet, ViewStyle } from 'react-native';
+import { Animated, View, StyleSheet, ViewStyle, StyleProp, DimensionValue } from 'react-native';
 import { useTheme } from '@/theme';
 
 type SkeletonProps = {
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   borderRadius?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
