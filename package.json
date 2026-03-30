@@ -113,17 +113,15 @@
       "^@/(.*)$": "<rootDir>/apps/mobile/src/$1"
     },
     "collectCoverageFrom": [
-      "apps/mobile/src/**/*.{ts,tsx}",
-      "apps/api/src/**/*.{ts,tsx}",
-      "packages/shared/src/**/*.{ts,tsx}",
-      "!**/*.d.ts",
-      "!**/index.ts",
-      "!**/index.tsx",
-      "!apps/api/src/services/adapters/**",
-      "!apps/mobile/src/navigation/**",
-      "!apps/mobile/src/screens/**",
-      "!apps/mobile/src/components/kyc/**",
-      "!apps/mobile/src/api/client.ts"
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/server/db/**",
+      "!src/server/adapters/**",
+      "!src/navigation/**",
+      "!src/screens/**",
+      "!src/components/kyc/**",
+      "!src/i18n/**",
+      "!src/theme/**"
     ],
     "coverageThreshold": {
       "global": {
