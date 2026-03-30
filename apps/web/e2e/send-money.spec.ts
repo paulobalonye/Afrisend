@@ -69,6 +69,7 @@ test.describe('Send Money Flow', () => {
     await expect(page.locator('[data-testid="method-card"]')).toBeVisible();
 
     await page.locator('[data-testid="method-bank_transfer"]').click();
+    await page.locator('button:has-text("Continue")').click();
 
     await expect(page).toHaveURL(/\/send\/review/);
   });
@@ -137,7 +138,7 @@ test.describe('Send Money Flow', () => {
     await confirmBtn.click();
 
     await expect(page).toHaveURL(/\/send\/processing/);
-    await expect(page.locator('text=/failed/i')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('text=/failed/i').first()).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('text=/insufficient funds/i')).toBeVisible();
   });
 });

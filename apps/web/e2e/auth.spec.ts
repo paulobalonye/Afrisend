@@ -78,7 +78,7 @@ test.describe('Login', () => {
 
     await page.click('button:has-text("Sign in")');
 
-    await expect(page.locator('[role="alert"]')).toBeVisible();
+    await expect(page.locator('[role="alert"]:not([id="__next-route-announcer__"])')).toBeVisible();
   });
 
   test('should redirect to OTP when MFA is required', async ({ page }) => {

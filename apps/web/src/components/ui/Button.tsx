@@ -4,15 +4,11 @@ import React from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
-type ButtonProps = {
+type ButtonProps = Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
   label: string;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
   variant?: ButtonVariant;
-  disabled?: boolean;
   isLoading?: boolean;
   fullWidth?: boolean;
-  className?: string;
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -28,18 +24,17 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 export function Button({
   label,
-  onClick,
   type = 'button',
   variant = 'primary',
   disabled = false,
   isLoading = false,
   fullWidth = false,
   className = '',
+  ...rest
 }: ButtonProps) {
   return (
     <button
       type={type}
-      onClick={onClick}
       disabled={disabled || isLoading}
       className={[
         'inline-flex items-center justify-center rounded-xl px-6 py-3',
@@ -52,6 +47,7 @@ export function Button({
       ]
         .filter(Boolean)
         .join(' ')}
+      {...rest}
     >
       {isLoading && (
         <span

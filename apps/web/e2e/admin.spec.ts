@@ -16,9 +16,9 @@ test.describe('Admin Transaction Monitoring', () => {
   test('should display transaction list', async ({ page }) => {
     await page.goto('/admin/transactions');
 
-    await expect(page.locator('text=txn-001').or(page.locator('text=txn-0'))).toBeVisible();
-    await expect(page.locator('text=/processing/i').first()).toBeVisible();
-    await expect(page.locator('text=/completed/i').first()).toBeVisible();
+    await expect(page.locator('text=txn-001').first()).toBeVisible();
+    await expect(page.locator('td span:has-text("Processing")')).toBeVisible();
+    await expect(page.locator('td span:has-text("Completed")')).toBeVisible();
   });
 
   test('should filter transactions by status', async ({ page }) => {
@@ -74,12 +74,8 @@ test.describe('Admin User Management', () => {
   test('should display user list', async ({ page }) => {
     await page.goto('/admin/users');
 
-    await expect(
-      page.locator('text=Admin User').or(page.locator('text=admin@afrisend.com'))
-    ).toBeVisible();
-    await expect(
-      page.locator('text=Bola Adeyemi').or(page.locator('text=bola@example.com'))
-    ).toBeVisible();
+    await expect(page.locator('text=Admin User').first()).toBeVisible();
+    await expect(page.locator('text=Bola Adeyemi').first()).toBeVisible();
   });
 
   test('should filter users by KYC status', async ({ page }) => {
@@ -104,10 +100,10 @@ test.describe('Admin User Management', () => {
     await page.locator('button:has-text("Edit")').first().click();
 
     // Modal should show
-    await expect(page.locator('text=/edit/i')).toBeVisible();
+    await expect(page.locator('h2:has-text("Edit User")')).toBeVisible();
 
-    // Change KYC tier
-    const tierSelect = page.locator('select').last();
+    // Change KYC tier (first select inside the modal overlay)
+    const tierSelect = page.locator('.fixed.inset-0 select').first();
     await tierSelect.selectOption('2');
 
     // Register request waiter BEFORE save

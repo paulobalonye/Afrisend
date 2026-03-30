@@ -49,24 +49,34 @@ export const TEST_TOKENS = {
 export const TEST_RECIPIENTS = [
   {
     id: 'rec-001',
+    userId: 'usr-test-001',
     firstName: 'Emeka',
     lastName: 'Okafor',
     nickname: 'Emeka Lagos',
     country: 'NG',
     payoutMethod: 'bank_transfer',
-    bankName: 'GTBank',
-    bankCode: '058',
-    accountNumber: '0123456789',
+    accountDetails: {
+      bankName: 'GTBank',
+      bankCode: '058',
+      accountNumber: '0123456789',
+    },
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
   },
   {
     id: 'rec-002',
+    userId: 'usr-test-001',
     firstName: 'Kwame',
     lastName: 'Asante',
     nickname: 'Kwame Accra',
     country: 'GH',
     payoutMethod: 'mobile_money',
-    phone: '+233201234567',
-    network: 'MTN',
+    accountDetails: {
+      phone: '+233201234567',
+      network: 'MTN',
+    },
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
   },
 ];
 
@@ -76,22 +86,30 @@ export const TEST_CORRIDORS = [
     sourceCurrency: 'GBP',
     destinationCurrency: 'NGN',
     destinationCountry: 'NG',
+    destinationCountryName: 'Nigeria',
     minAmount: 10,
     maxAmount: 5000,
+    isActive: true,
+    refreshIntervalSeconds: 30,
   },
   {
     id: 'GBP-GHS',
     sourceCurrency: 'GBP',
     destinationCurrency: 'GHS',
     destinationCountry: 'GH',
+    destinationCountryName: 'Ghana',
     minAmount: 10,
     maxAmount: 5000,
+    isActive: true,
+    refreshIntervalSeconds: 30,
   },
 ];
 
 export const TEST_QUOTE = {
   quoteId: 'quote-001',
   corridorId: 'GBP-NGN',
+  sourceCurrency: 'GBP',
+  destinationCurrency: 'NGN',
   sourceAmount: 100,
   destinationAmount: 195000,
   exchangeRate: 1950.0,
@@ -240,6 +258,7 @@ export async function navigateThroughAmount(page: Page): Promise<void> {
  */
 export async function navigateThroughPaymentMethod(page: Page): Promise<void> {
   await page.locator('[data-testid="method-bank_transfer"]').click();
+  await page.locator('button:has-text("Continue")').click();
   // Now on /send/review with payment method stored
 }
 
@@ -257,7 +276,7 @@ export async function mockAdminEndpoints(page: Page): Promise<void> {
       json: {
         success: true,
         data: {
-          transactions: [
+          data: [
             {
               id: 'txn-001',
               userId: 'usr-test-001',
@@ -294,7 +313,7 @@ export async function mockAdminEndpoints(page: Page): Promise<void> {
         json: {
           success: true,
           data: {
-            users: [
+            data: [
               { ...TEST_ADMIN_USER, monthlyLimit: 5000, accountStatus: 'active' },
               {
                 id: 'usr-test-002',
